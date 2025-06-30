@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:firebase_messaging/firebase_messaging.dart' as fm;
 import 'package:jc_service_wrapper/src/models/remote_notification_wrapper.dart';
 import 'package:jc_service_wrapper/src/service_wrapper.dart';
 
@@ -93,23 +92,6 @@ class RemoteMessageWrapper {
       threadId: json['threadId'],
       ttl: json['ttl'],
       rawData: json
-    );
-  }
-
-  fm.RemoteMessage toFirebaseMessage() {
-    return fm.RemoteMessage(
-      senderId: senderId,
-      category: category,
-      collapseKey: collapseKey,
-      contentAvailable: contentAvailable,
-      data: data,
-      from: from,
-      messageId: messageId,
-      messageType: messageId,
-      mutableContent: mutableContent,
-      notification: notification?.toFirebase(),
-      sentTime: sentTime,threadId: threadId,
-      ttl: ttl,
     );
   }
 

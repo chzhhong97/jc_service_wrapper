@@ -1,4 +1,3 @@
-import 'package:firebase_messaging/firebase_messaging.dart' as fm;
 import 'package:jc_service_wrapper/src/models/types.dart';
 
 /// A class representing a notification which has been construted and sent to the
@@ -33,18 +32,6 @@ class RemoteNotificationWrapper {
       apple: json['apple'] != null
           ? AppleNotification.fromFirebase(Map<String, dynamic>.from(json['apple']))
           : null,
-    );
-  }
-
-  fm.RemoteNotification toFirebase() {
-    return fm.RemoteNotification(
-      title: title,
-      titleLocArgs: titleLocArgs,
-      body: body,
-      bodyLocArgs: bodyLocArgs,
-      bodyLocKey: bodyLocKey,
-      android: android?.toFirebase(),
-      apple: apple?.toFirebase(),
     );
   }
 
@@ -146,23 +133,6 @@ class AndroidNotification {
       ticker: json['ticker'],
       tag: json['tag'],
       visibility: convertToAndroidNotificationVisibility(json['visibility']),
-    );
-  }
-
-  fm.AndroidNotification toFirebase() {
-    return fm.AndroidNotification(
-      channelId: channelId,
-      clickAction: clickAction,
-      color: color,
-      count: count,
-      imageUrl: imageUrl,
-      link: link,
-      priority: priority.toFirebase(),
-      smallIcon: smallIcon,
-      sound: sound,
-      ticker: ticker,
-      tag: tag,
-      visibility: visibility.toFirebase(),
     );
   }
 
@@ -296,17 +266,6 @@ class AppleNotification {
     );
   }
 
-  fm.AppleNotification toFirebase(){
-    return fm.AppleNotification(
-      badge: badge,
-      subtitle: subtitle,
-      subtitleLocArgs: subtitleLocArgs,
-      subtitleLocKey: subtitleLocKey,
-      imageUrl: imageUrl,
-      sound: sound?.toFirebase(),
-    );
-  }
-
   /// Returns the [AppleNotification] as a raw Map.
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
@@ -355,14 +314,6 @@ class AppleNotificationSound {
       critical: json['critical'] ?? false,
       name: json['name'],
       volume: json['volume'] ?? 0,
-    );
-  }
-
-  fm.AppleNotificationSound toFirebase(){
-    return fm.AppleNotificationSound(
-      critical: critical,
-      name: name,
-      volume: volume,
     );
   }
 

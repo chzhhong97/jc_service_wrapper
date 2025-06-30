@@ -30,12 +30,7 @@ dependencies:
       path: flutter-hms-location
   agconnect_crash:
   agconnect_core:
-  ## GOOGLE
-  firebase_messaging:
-  firebase_core:
-  firebase_analytics:
-  firebase_crashlytics:
-  geolocator:
+
   flutter:
     sdk: flutter
 

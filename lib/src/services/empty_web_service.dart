@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/widgets.dart';
 import 'package:jc_service_wrapper/src/service_wrapper.dart';
 import 'package:jc_service_wrapper/src/utils/service_utils.dart';
@@ -9,7 +8,7 @@ class WebService extends Service{
 
   @override
   Future<void> initialize(OnBackgroundNotification handler, {
-    FirebaseOptions? options,
+    dynamic options,
     String? vapidKey,
     WebTokenOptions? webTokenOptions,
   }) async {}

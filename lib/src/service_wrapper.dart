@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -71,7 +70,7 @@ class ServiceWrapper{
   Future<void> initialize(
       OnBackgroundNotification onBackgroundNotification,
       {
-        FirebaseOptions? options,
+        dynamic options,
         WebTokenOptions? webTokenOptions,
         String? vapidKey,
         List<AndroidNotificationChannel> androidLocalNotificationChannelList = const [],
@@ -150,10 +149,10 @@ class ServiceWrapper{
     if(kIsWeb) return ServiceType.WEB;
     if(defaultTargetPlatform == TargetPlatform.iOS) return ServiceType.GMS;
 
-    bool google = await FlutterHmsGmsAvailability.isGmsAvailable;
+    //bool google = await FlutterHmsGmsAvailability.isGmsAvailable;
     bool huawei = await FlutterHmsGmsAvailability.isHmsAvailable;
 
-    if(google) return ServiceType.GMS;
+    //if(google) return ServiceType.GMS;
     if(huawei) return ServiceType.HMS;
 
     return ServiceType.NONE;

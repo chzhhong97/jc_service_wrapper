@@ -1,5 +1,3 @@
-import 'package:firebase_messaging/firebase_messaging.dart' as fm;
-
 enum AndroidNotificationPriority {
   /// The application small icon will not show up in the status bar, or alert the user. The notification
   /// will be in a collapsed state in the notification shade and placed at the bottom of the list.
@@ -23,23 +21,6 @@ enum AndroidNotificationPriority {
   /// The highest priority level a notification can be set to.
   maximumPriority;
 
-  fm.AndroidNotificationPriority toFirebase() {
-    switch (this) {
-      case minimumPriority:
-        return fm.AndroidNotificationPriority.minimumPriority;
-      case lowPriority:
-        return fm.AndroidNotificationPriority.lowPriority;
-      case defaultPriority:
-        return fm.AndroidNotificationPriority.defaultPriority;
-      case highPriority:
-        return fm.AndroidNotificationPriority.highPriority;
-      case maximumPriority:
-        return fm.AndroidNotificationPriority.maximumPriority;
-      default:
-        return fm.AndroidNotificationPriority.defaultPriority;
-    }
-  }
-
   static AndroidNotificationPriority fromName(String name){
     for(final i in AndroidNotificationPriority.values){
       if(i.name.toLowerCase() == name.toLowerCase()) return i;
@@ -59,19 +40,6 @@ enum AndroidNotificationVisibility {
 
   /// Show this notification in its entirety on all lock-screens.
   public;
-
-  fm.AndroidNotificationVisibility toFirebase() {
-    switch (this) {
-      case secret:
-        return fm.AndroidNotificationVisibility.secret;
-      case private:
-        return fm.AndroidNotificationVisibility.private;
-      case public:
-        return fm.AndroidNotificationVisibility.public;
-      default:
-        return fm.AndroidNotificationVisibility.private;
-    }
-  }
 
   static AndroidNotificationVisibility fromName(String name){
     for(final i in AndroidNotificationVisibility.values){
