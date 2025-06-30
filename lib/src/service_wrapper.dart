@@ -5,7 +5,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_hms_gms_availability/flutter_hms_gms_availability.dart';
 import 'package:jc_service_wrapper/src/models/location_wrapper.dart';
 import 'package:jc_service_wrapper/src/models/remote_message_wrapper.dart';
 import 'package:jc_service_wrapper/src/services/empty_web_service.dart'
@@ -148,15 +147,7 @@ class ServiceWrapper{
 
   Future<ServiceType> getServiceType() async {
     if(kIsWeb) return ServiceType.WEB;
-    if(defaultTargetPlatform == TargetPlatform.iOS) return ServiceType.GMS;
-
-    bool google = await FlutterHmsGmsAvailability.isGmsAvailable;
-    bool huawei = await FlutterHmsGmsAvailability.isHmsAvailable;
-
-    if(google) return ServiceType.GMS;
-    if(huawei) return ServiceType.HMS;
-
-    return ServiceType.NONE;
+    return ServiceType.GMS;
   }
 
   Future<String?> getToken() async {
@@ -334,20 +325,6 @@ class ServiceWrapper{
           when: when,
           androidActions: androidActions,
         );
-      case ServiceType.HMS:
-        return resolveServiceSpecificImplementation<HuaweiService>()
-            ?.showNotification(
-            id: id,
-            title: title,
-            body: body,
-            bigPictureUrl: bigPictureUrl,
-            largeIconUrl: largeIconUrl,
-            payload: payload,
-            onGoing: onGoing,
-          bigText: bigText,
-          channelId: channelId,
-          channelName: channelName,
-        );
       default:
         return;
     }
@@ -397,22 +374,6 @@ class ServiceWrapper{
           timeoutAfter: timeoutAfter,
           when: when,
           androidActions: androidActions,
-        );
-        break;
-      case ServiceType.HMS:
-        await resolveServiceSpecificImplementation<HuaweiService>()
-            ?.showScheduledNotification(
-            id: id,
-            title: title,
-            body: body,
-          bigPictureUrl: bigPictureUrl,
-          largeIconUrl: largeIconUrl,
-            payload: payload,
-            onGoing: onGoing,
-          bigText: bigText,
-            scheduledDate: scheduledDate,
-          channelId: channelId,
-          channelName: channelName,
         );
         break;
       default:

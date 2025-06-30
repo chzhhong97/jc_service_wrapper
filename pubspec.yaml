@@ -10,7 +10,6 @@ environment:
 dependencies:
   flutter_timezone:
   flutter_local_notifications:
-  flutter_hms_gms_availability:
   permission_handler:
   package_info_plus:
   path_provider:
@@ -21,15 +20,6 @@ dependencies:
       url: https://github.com/chzhhong97/flutter_packages.git
       path: packages/jc_utils
 
-  ## HUAWEI
-  huawei_push:
-  huawei_location:
-    git:
-      url: https://github.com/chzhhong97/hms-flutter-plugin.git
-      ref: master
-      path: flutter-hms-location
-  agconnect_crash:
-  agconnect_core:
   ## GOOGLE
   firebase_messaging:
   firebase_core:
