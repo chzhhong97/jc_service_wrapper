@@ -21,7 +21,13 @@ dependencies:
       url: https://github.com/chzhhong97/flutter_packages.git
       path: packages/jc_utils
 
+  jc_widgets:
+    git:
+      url: https://github.com/chzhhong97/flutter_packages.git
+      path: packages/jc_widgets
+
   ## HUAWEI
+  huawei_map:
   huawei_push:
   huawei_location:
     git:
