@@ -104,23 +104,19 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
   }
 
   void _updateMarkers(){
-    switch (serviceType) {
-      case ServiceType.GMS:
-      case ServiceType.WEB:
-      //cast selectedmarker latlng to google
-        widget.markersSelectedMap.forEach((k, v) {
-          try {
-            googleMarkers[k.toGoogle()] = v;
-          } catch (e) {}
-        });
-      case ServiceType.HMS:
-      //cast selectedmarker latlng to huawei
-        widget.markersSelectedMap.forEach((k, v) {
-          try {
-            huaweiMarkers[k.toHuawei()] = v;
-          } catch (e) {}
-        });
-      default:
+    if(serviceType == ServiceType.GMS || serviceType == ServiceType.WEB){
+      widget.markersSelectedMap.forEach((k, v) {
+        try {
+          googleMarkers[k.toGoogle()] = v;
+        } catch (e) {}
+      });
+    }
+    else if(serviceType == ServiceType.HMS){
+      widget.markersSelectedMap.forEach((k, v) {
+        try {
+          huaweiMarkers[k.toHuawei()] = v;
+        } catch (e) {}
+      });
     }
 
     if(mounted){
