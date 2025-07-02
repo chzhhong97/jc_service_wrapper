@@ -178,7 +178,7 @@ class BubblePainter extends CustomPainter {
     canvas.drawPath(clip, _fillPaint);
     
     if(_strokePaint != null){
-      canvas.drawPath(clip, _strokePaint!);
+      canvas.drawPath(clip, _strokePaint);
     }
     
     canvas.drawPath(clip, _fillPaint);
