@@ -101,16 +101,12 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
   }
 
   void _updateMarkers(){
-    switch (serviceType) {
-      case ServiceType.GMS:
-      case ServiceType.WEB:
-      //cast selectedmarker latlng to google
-        widget.markersSelectedMap.forEach((k, v) {
-          try {
-            googleMarkers[k.toGoogle()] = v;
-          } catch (e) {}
-        });
-      default:
+    if(serviceType == ServiceType.GMS || serviceType == ServiceType.WEB){
+      widget.markersSelectedMap.forEach((k, v) {
+        try {
+          googleMarkers[k.toGoogle()] = v;
+        } catch (e) {}
+      });
     }
 
     if(mounted){
@@ -133,7 +129,7 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
     switch (serviceType) {
       case ServiceType.GMS:
       case ServiceType.WEB:
-        return GoogleMapLocationPicker(
+         return GoogleMapLocationPicker(
           initialCameraPosition: widget.initialCameraPosition.toGoogle(),
           myLocation: widget.myLocation?.toGoogle(),
           onMapCreated: (controller) {
