@@ -421,6 +421,7 @@ class FirebaseService extends Service{
       ),
       payload: payload,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 
