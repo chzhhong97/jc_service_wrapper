@@ -8,13 +8,13 @@ environment:
   flutter: ">=3.32.0"
 
 dependencies:
-  flutter_timezone:
-  flutter_local_notifications:
-  permission_handler:
-  package_info_plus:
-  path_provider:
-  timezone:
-  intl:
+  flutter_timezone: ^4.1.1
+  flutter_local_notifications: ^19.3.0
+  permission_handler: ^12.0.0+1
+  package_info_plus: ^8.3.0
+  path_provider: ^2.1.5
+  timezone: ^0.10.1
+  intl: ^0.20.2
   jc_utils:
     git:
       url: https://github.com/chzhhong97/flutter_packages.git
@@ -26,12 +26,13 @@ dependencies:
       path: packages/jc_widgets
 
   ## GOOGLE
-  google_maps_flutter:
-  firebase_messaging:
-  firebase_core:
-  firebase_analytics:
-  firebase_crashlytics:
-  geolocator:
+  google_maps_flutter: ^2.12.3
+  firebase_messaging: ^15.2.8
+  firebase_core: ^3.15.0
+  firebase_analytics: ^11.4.6
+  firebase_crashlytics: ^4.3.8
+  geolocator: ^14.0.2
+
   flutter:
     sdk: flutter
 
