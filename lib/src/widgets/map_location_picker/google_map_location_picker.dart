@@ -193,7 +193,7 @@ class _GoogleMapLocationPickerState extends State<GoogleMapLocationPicker> {
         _infoWindowController.hideInfoWindow?.call();
         await loadMarkerIcon();
         getMarker();
-        await zoomToMarkers();
+        await zoomToMarkers(firstTime: true);
       }
       _updateMyLocation();
       if (mounted) setState(() {});
@@ -322,9 +322,10 @@ class _GoogleMapLocationPickerState extends State<GoogleMapLocationPicker> {
         ),
       );
 
-      // Move camera to fit the bounds with padding
+      // Get controller
       final controller = await completer.future;
 
+      // Move camera to fit the bounds with padding
       await Future.delayed(const Duration(milliseconds: 100), () {
         controller.animateCamera(
           CameraUpdate.newLatLngBounds(
