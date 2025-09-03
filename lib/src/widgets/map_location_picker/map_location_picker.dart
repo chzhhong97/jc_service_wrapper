@@ -72,7 +72,7 @@ class MapLocationPicker extends StatefulWidget {
 
 class _MapLocationPickerState extends State<MapLocationPicker> {
 
-  final Map<g.LatLng, bool> googleMarkers = {};
+  Map<g.LatLng, bool> googleMarkers = {};
 
   late ServiceType serviceType = widget.overrideServiceType ?? ServiceWrapper().serviceType;
   late MapController mapController = MapController(serviceType);
@@ -107,6 +107,8 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
           googleMarkers[k.toGoogle()] = v;
         } catch (e) {}
       });
+
+      googleMarkers = Map.of(googleMarkers);
     }
 
     if(mounted){
