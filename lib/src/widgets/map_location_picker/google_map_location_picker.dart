@@ -193,7 +193,7 @@ class _GoogleMapLocationPickerState extends State<GoogleMapLocationPicker> {
         _infoWindowController.hideInfoWindow?.call();
         await loadMarkerIcon();
         getMarker();
-        await zoomToMarkers(firstTime: true);
+        await zoomToMarkers();
       }
       _updateMyLocation();
       if (mounted) setState(() {});
