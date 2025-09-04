@@ -140,7 +140,7 @@ class _GoogleMapLocationPickerState extends State<GoogleMapLocationPicker> {
               icon: _markersSelectedMap[key]! ? mSelected! : mUnselected!,
               onTap: () {
                 if(widget.clickedMarkerMoveCamera){
-                  completer.future.then((c) => c.animateCamera(CameraUpdate.newLatLng(key)));
+                  completer.future.then((c) => c.animateCamera(CameraUpdate.newLatLngZoom(key, widget.zoom)));
                 }
                 final infoWindow = widget.onBuildInfoWindow?.call(context, key);
                 if (infoWindow != null) {
