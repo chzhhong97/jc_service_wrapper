@@ -85,7 +85,7 @@ class _GoogleMapLocationPickerState extends State<GoogleMapLocationPicker> {
   CustomInfoWindowController();
   Map<LatLng, bool> _markersSelectedMap = {};
 
-  Future loadMarkerIcon() async {
+  Future<void> loadMarkerIcon() async {
     selected = await widget.selectedMarker?.call();
     unselected = await widget.unselectedMarker?.call();
   }
@@ -94,10 +94,11 @@ class _GoogleMapLocationPickerState extends State<GoogleMapLocationPicker> {
     markers = buildMarkers();
   }
 
-  Future zoomToMarkers({bool firstTime = false}) async {
+  Future<void> zoomToMarkers({bool firstTime = false}) async {
+    if(!widget.autoZoomToMarkers) return;
+
     if ((widget.myLocation == null &&
-        selectedMarker == null &&
-        widget.autoZoomToMarkers) || (firstTime && markers.isNotEmpty)) {
+        selectedMarker == null) || (firstTime && markers.isNotEmpty)) {
       final controller = await completer.future;
       final bounds = _bounds(markers);
 
@@ -293,7 +294,7 @@ class _GoogleMapLocationPickerState extends State<GoogleMapLocationPicker> {
     );
   }
 
-  Future zoomToFit() async {
+  Future<void> zoomToFit() async {
     // Calculate the bounds of the two markers
     if (widget.myLocation != null && selectedMarker != null) {
       LatLngBounds bounds = LatLngBounds(
