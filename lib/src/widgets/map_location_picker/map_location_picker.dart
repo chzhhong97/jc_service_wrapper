@@ -37,6 +37,7 @@ class MapLocationPicker extends StatefulWidget {
     this.infoWindowOffset = 25,
     this.overrideServiceType,
     this.clickedMarkerMoveCamera = true,
+    this.cloudMapId,
     super.key,
   });
 
@@ -65,6 +66,7 @@ class MapLocationPicker extends StatefulWidget {
   final double infoWindowOffset;
   final ServiceType? overrideServiceType;
   final bool clickedMarkerMoveCamera;
+  final String? cloudMapId;
 
   @override
   State<MapLocationPicker> createState() => _MapLocationPickerState();
@@ -159,6 +161,7 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
           autoZoomToMarkers: widget.autoZoomToMarkers,
           zoom: widget.zoom,
           markersSelectedMap: googleMarkers,
+          cloudMapId: widget.cloudMapId,
           selectedMarker: () async {
             final bit = await widget.selectedMarker?.call();
             return bit?.toGoogle();
