@@ -37,6 +37,7 @@ class MapLocationPicker extends StatefulWidget {
     this.infoWindowOffset = 25,
     this.overrideServiceType,
     this.clickedMarkerMoveCamera = true,
+    this.cloudMapId,
     super.key,
   });
 
@@ -65,13 +66,14 @@ class MapLocationPicker extends StatefulWidget {
   final double infoWindowOffset;
   final ServiceType? overrideServiceType;
   final bool clickedMarkerMoveCamera;
+  final String? cloudMapId;
 
   @override
   State<MapLocationPicker> createState() => _MapLocationPickerState();
 }
 
 class _MapLocationPickerState extends State<MapLocationPicker> {
-  final Map<h.LatLng, bool> huaweiMarkers = {};
+  Map<h.LatLng, bool> huaweiMarkers = {};
 
   late ServiceType serviceType = widget.overrideServiceType ?? ServiceWrapper().serviceType;
   late MapController mapController = MapController(serviceType);
@@ -108,6 +110,7 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
             huaweiMarkers[k.toHuawei()] = v;
           } catch (e) {}
         });
+        huaweiMarkers = Map.of(huaweiMarkers);
       default:
     }
 
