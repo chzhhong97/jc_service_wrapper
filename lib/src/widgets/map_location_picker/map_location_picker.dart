@@ -1,9 +1,13 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:jc_service_wrapper/jc_service_wrapper.dart';
 import 'package:jc_service_wrapper/src/widgets/map_location_picker/animated_pin.dart';
 import 'package:jc_service_wrapper/src/widgets/map_location_picker/models/map_controller.dart';
+import 'package:jc_service_wrapper/src/widgets/map_location_picker/models/web_camera_control_position.dart';
+import 'package:jc_service_wrapper/src/widgets/map_location_picker/models/web_gesture_handling.dart';
 import 'huawei_map_location_picker.dart';
 import 'package:huawei_map/huawei_map.dart' as h show LatLng;
 
@@ -38,6 +42,10 @@ class MapLocationPicker extends StatefulWidget {
     this.overrideServiceType,
     this.clickedMarkerMoveCamera = true,
     this.cloudMapId,
+    this.webGestureHandling,
+    this.webCameraControlPosition,
+    this.webCameraControlEnabled = true,
+    this.gestureRecognizers,
     super.key,
   });
 
@@ -67,6 +75,10 @@ class MapLocationPicker extends StatefulWidget {
   final ServiceType? overrideServiceType;
   final bool clickedMarkerMoveCamera;
   final String? cloudMapId;
+  final WebGestureHandling? webGestureHandling;
+  final WebCameraControlPosition? webCameraControlPosition;
+  final bool webCameraControlEnabled;
+  final Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers;
 
   @override
   State<MapLocationPicker> createState() => _MapLocationPickerState();
@@ -75,7 +87,8 @@ class MapLocationPicker extends StatefulWidget {
 class _MapLocationPickerState extends State<MapLocationPicker> {
   Map<h.LatLng, bool> huaweiMarkers = {};
 
-  late ServiceType serviceType = widget.overrideServiceType ?? ServiceWrapper().serviceType;
+  late ServiceType serviceType =
+      widget.overrideServiceType ?? ServiceWrapper().serviceType;
   late MapController mapController = MapController(serviceType);
 
   @override
@@ -86,25 +99,26 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
 
   @override
   void didUpdateWidget(covariant MapLocationPicker oldWidget) {
-    if(widget.overrideServiceType != null && serviceType != widget.overrideServiceType){
+    if (widget.overrideServiceType != null &&
+        serviceType != widget.overrideServiceType) {
       serviceType = widget.overrideServiceType ?? ServiceWrapper().serviceType;
       mapController = MapController(serviceType);
-      if(mounted){
+      if (mounted) {
         setState(() {});
       }
     }
 
-    if(widget.markersSelectedMap != oldWidget.markersSelectedMap){
+    if (widget.markersSelectedMap != oldWidget.markersSelectedMap) {
       _updateMarkers();
     }
 
     super.didUpdateWidget(oldWidget);
   }
 
-  void _updateMarkers(){
+  void _updateMarkers() {
     switch (serviceType) {
       case ServiceType.HMS:
-      //cast selectedmarker latlng to huawei
+        //cast selectedmarker latlng to huawei
         widget.markersSelectedMap.forEach((k, v) {
           try {
             huaweiMarkers[k.toHuawei()] = v;
@@ -114,14 +128,14 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
       default:
     }
 
-    if(mounted){
+    if (mounted) {
       setState(() {});
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if(!ServiceWrapper().isInit && widget.overrideServiceType == null){
+    if (!ServiceWrapper().isInit && widget.overrideServiceType == null) {
       return Center(
         child: Text(
           'Initialize ServiceWrapper before using this widget',
@@ -129,7 +143,8 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
       );
     }
 
-    final serviceType = widget.overrideServiceType ?? ServiceWrapper().serviceType;
+    final serviceType =
+        widget.overrideServiceType ?? ServiceWrapper().serviceType;
     final MapController mapController = MapController(serviceType);
     switch (serviceType) {
       case ServiceType.HMS:
@@ -150,7 +165,8 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
           },
           pinBuilder: widget.pinBuilder,
           onBuildInfoWindow: (context, latLng) {
-            return widget.onBuildInfoWindow?.call(context, LatLng.fromHuawei(latLng));
+            return widget.onBuildInfoWindow
+                ?.call(context, LatLng.fromHuawei(latLng));
           },
           selectInitialPosition: widget.selectInitialPosition,
           scrollGesturesEnabled: widget.scrollGesturesEnabled,

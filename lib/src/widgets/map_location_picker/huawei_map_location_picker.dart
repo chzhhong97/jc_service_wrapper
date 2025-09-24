@@ -38,6 +38,7 @@ class HuaweiMapLocationPicker extends StatefulWidget {
         this.overridePixelRatio,
         this.infoWindowOffset = 25,
         this.clickedMarkerMoveCamera = true,
+        this.gestureRecognizers,
         super.key,
       });
 
@@ -65,6 +66,7 @@ class HuaweiMapLocationPicker extends StatefulWidget {
   final double? overridePixelRatio;
   final double infoWindowOffset;
   final bool clickedMarkerMoveCamera;
+  final Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers;
 
   @override
   State<HuaweiMapLocationPicker> createState() => _HuaweiMapLocationPickerState();
@@ -267,7 +269,7 @@ class _HuaweiMapLocationPickerState extends State<HuaweiMapLocationPicker> {
               getMarker();
             });
           },
-          gestureRecognizers: {}..add(
+          gestureRecognizers: widget.gestureRecognizers ?? {}..add(
               Factory<EagerGestureRecognizer>(() => EagerGestureRecognizer())),
         ),
         CustomInfoWindow(
