@@ -10,3 +10,5 @@ export 'src/widgets/map_location_picker/models/bitmap_descriptor.dart';
 export 'src/widgets/map_location_picker/models/camera_update.dart';
 export 'src/widgets/map_location_picker/models/lat_lng.dart';
 export 'src/widgets/map_location_picker/models/screen_coordinate.dart';
+export 'src/widgets/map_location_picker/models/web_camera_control_position.dart';
+export 'src/widgets/map_location_picker/models/web_gesture_handling.dart';
