@@ -13,33 +13,37 @@ import 'dart:ui' as ui;
 import 'models/lat_lng.dart' as l;
 
 class GoogleMapLocationPicker extends StatefulWidget {
-  const GoogleMapLocationPicker(
-      {required this.initialCameraPosition,
-        this.myLocation,
-        this.onMapCreated,
-        this.onCameraMove,
-        this.onCameraIdle,
-        this.onCameraMoveStarted,
-        this.onPositionUpdate,
-        this.pinBuilder,
-        this.onBuildInfoWindow,
-        this.selectInitialPosition = true,
-        this.scrollGesturesEnabled = true,
-        this.zoomGesturesEnabled = true,
-        this.rotateGesturesEnabled = true,
-        this.zoomControlsEnabled = true,
-        this.disableCenterPin = false,
-        this.autoZoomToMarkers = false,
-        this.zoom = 0,
-        this.markersSelectedMap = const {},
-        this.selectedMarker,
-        this.unselectedMarker,
-        this.overridePixelRatio,
-        this.infoWindowOffset = 25,
-        this.clickedMarkerMoveCamera = true,
-        this.cloudMapId,
-        super.key,
-      });
+  const GoogleMapLocationPicker({
+    required this.initialCameraPosition,
+    this.myLocation,
+    this.onMapCreated,
+    this.onCameraMove,
+    this.onCameraIdle,
+    this.onCameraMoveStarted,
+    this.onPositionUpdate,
+    this.pinBuilder,
+    this.onBuildInfoWindow,
+    this.selectInitialPosition = true,
+    this.scrollGesturesEnabled = true,
+    this.zoomGesturesEnabled = true,
+    this.rotateGesturesEnabled = true,
+    this.zoomControlsEnabled = true,
+    this.disableCenterPin = false,
+    this.autoZoomToMarkers = false,
+    this.zoom = 0,
+    this.markersSelectedMap = const {},
+    this.selectedMarker,
+    this.unselectedMarker,
+    this.overridePixelRatio,
+    this.infoWindowOffset = 25,
+    this.clickedMarkerMoveCamera = true,
+    this.cloudMapId,
+    this.webGestureHandling,
+    this.webCameraControlPosition,
+    this.webCameraControlEnabled = true,
+    this.gestureRecognizers,
+    super.key,
+  });
 
   final LatLng initialCameraPosition;
   final LatLng? myLocation;
@@ -50,7 +54,7 @@ class GoogleMapLocationPicker extends StatefulWidget {
   final Function(LatLng position)? onPositionUpdate;
   final Widget Function(BuildContext context, PinState state)? pinBuilder;
   final Widget? Function(BuildContext context, LatLng coordinate)?
-  onBuildInfoWindow;
+      onBuildInfoWindow;
   final bool selectInitialPosition;
   final bool zoomControlsEnabled;
   final bool scrollGesturesEnabled;
@@ -66,9 +70,14 @@ class GoogleMapLocationPicker extends StatefulWidget {
   final double infoWindowOffset;
   final bool clickedMarkerMoveCamera;
   final String? cloudMapId;
+  final WebGestureHandling? webGestureHandling;
+  final WebCameraControlPosition? webCameraControlPosition;
+  final bool webCameraControlEnabled;
+  final Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers;
 
   @override
-  State<GoogleMapLocationPicker> createState() => _GoogleMapLocationPickerState();
+  State<GoogleMapLocationPicker> createState() =>
+      _GoogleMapLocationPickerState();
 }
 
 class _GoogleMapLocationPickerState extends State<GoogleMapLocationPicker> {
@@ -82,7 +91,7 @@ class _GoogleMapLocationPickerState extends State<GoogleMapLocationPicker> {
   BitmapDescriptor? unselected;
   Marker? selectedMarker;
   final CustomInfoWindowController _infoWindowController =
-  CustomInfoWindowController();
+      CustomInfoWindowController();
   Map<LatLng, bool> _markersSelectedMap = {};
 
   Future<void> loadMarkerIcon() async {
@@ -95,10 +104,10 @@ class _GoogleMapLocationPickerState extends State<GoogleMapLocationPicker> {
   }
 
   Future<void> zoomToMarkers({bool firstTime = false}) async {
-    if(!widget.autoZoomToMarkers) return;
+    if (!widget.autoZoomToMarkers) return;
 
-    if ((widget.myLocation == null &&
-        selectedMarker == null) || (firstTime && markers.isNotEmpty)) {
+    if ((widget.myLocation == null && selectedMarker == null) ||
+        (firstTime && markers.isNotEmpty)) {
       final controller = await completer.future;
       final bounds = _bounds(markers);
 
@@ -117,8 +126,9 @@ class _GoogleMapLocationPickerState extends State<GoogleMapLocationPicker> {
     Set<Marker> markers = {};
     final mSelected = selected ?? unselected;
     final mUnselected = unselected ?? selected;
-    if(mSelected == null && mUnselected == null) {
-      debugPrint('Please provide selectedMarkerBitmap and unselectedMarkerBitmap to show marker');
+    if (mSelected == null && mUnselected == null) {
+      debugPrint(
+          'Please provide selectedMarkerBitmap and unselectedMarkerBitmap to show marker');
       return {};
     }
 
@@ -132,12 +142,14 @@ class _GoogleMapLocationPickerState extends State<GoogleMapLocationPicker> {
               zIndex: _markersSelectedMap[key]! ? 1 : 0,
               icon: _markersSelectedMap[key]! ? mSelected! : mUnselected!,
               onTap: () {
-                if(widget.clickedMarkerMoveCamera){
-                  completer.future.then((c) => c.animateCamera(CameraUpdate.newLatLng(key)));
+                if (widget.clickedMarkerMoveCamera) {
+                  completer.future.then(
+                      (c) => c.animateCamera(CameraUpdate.newLatLng(key)));
                 }
                 final infoWindow = widget.onBuildInfoWindow?.call(context, key);
                 if (infoWindow != null) {
-                  _infoWindowController.addInfoWindow?.call(infoWindow, l.LatLng(key.latitude, key.longitude));
+                  _infoWindowController.addInfoWindow
+                      ?.call(infoWindow, l.LatLng(key.latitude, key.longitude));
                 }
 
                 setState(() {
@@ -200,13 +212,15 @@ class _GoogleMapLocationPickerState extends State<GoogleMapLocationPicker> {
   }
 
   void _updateMyLocation({bool firstTime = false}) async {
-    if ((widget.myLocation != null && widget.myLocation! != currentPosition) || (firstTime && widget.myLocation != null)) {
+    if ((widget.myLocation != null && widget.myLocation! != currentPosition) ||
+        (firstTime && widget.myLocation != null)) {
       if (_markersSelectedMap.isNotEmpty == true) {
         await zoomToFit();
       } else {
         final controller = await completer.future;
         prevCameraPosition = cameraPosition;
-        await controller.animateCamera(CameraUpdate.newLatLngZoom(widget.myLocation!, widget.zoom));
+        await controller.animateCamera(
+            CameraUpdate.newLatLngZoom(widget.myLocation!, widget.zoom));
       }
 
       currentPosition = widget.myLocation!;
@@ -231,7 +245,8 @@ class _GoogleMapLocationPickerState extends State<GoogleMapLocationPicker> {
           cloudMapId: widget.cloudMapId,
           onMapCreated: (controller) {
             completer.complete(controller);
-            _infoWindowController.mapController = MapController(ServiceType.GMS)..setController(controller);
+            _infoWindowController.mapController = MapController(ServiceType.GMS)
+              ..setController(controller);
 
             if (widget.selectInitialPosition) {
               _onPositionUpdate(cameraPosition);
@@ -266,8 +281,12 @@ class _GoogleMapLocationPickerState extends State<GoogleMapLocationPicker> {
               getMarker();
             });
           },
-          gestureRecognizers: {}..add(
-              Factory<EagerGestureRecognizer>(() => EagerGestureRecognizer())),
+          webGestureHandling: widget.webGestureHandling,
+          webCameraControlEnabled: widget.webCameraControlEnabled,
+          webCameraControlPosition: widget.webCameraControlPosition,
+          gestureRecognizers: widget.gestureRecognizers ?? {}
+            ..add(Factory<EagerGestureRecognizer>(
+                () => EagerGestureRecognizer())),
         ),
         CustomInfoWindow(
           controller: _infoWindowController,
@@ -338,12 +357,12 @@ class _GoogleMapLocationPickerState extends State<GoogleMapLocationPicker> {
 
   LatLngBounds _createBounds(List<LatLng> positions) {
     final southwestLat = positions.map((p) => p.latitude).reduce(
-            (value, element) => value < element ? value : element); // smallest
+        (value, element) => value < element ? value : element); // smallest
     final southwestLon = positions
         .map((p) => p.longitude)
         .reduce((value, element) => value < element ? value : element);
     final northeastLat = positions.map((p) => p.latitude).reduce(
-            (value, element) => value > element ? value : element); // biggest
+        (value, element) => value > element ? value : element); // biggest
     final northeastLon = positions
         .map((p) => p.longitude)
         .reduce((value, element) => value > element ? value : element);
@@ -373,7 +392,9 @@ class _GoogleMapLocationPickerState extends State<GoogleMapLocationPicker> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               pin,
-              const SizedBox(height: 42,)
+              const SizedBox(
+                height: 42,
+              )
             ],
           ),
         ),
@@ -391,8 +412,7 @@ class _GoogleMapLocationPickerState extends State<GoogleMapLocationPicker> {
     );
   }
 
-  CameraPosition get cameraPosition =>
-      CameraPosition(target: currentPosition);
+  CameraPosition get cameraPosition => CameraPosition(target: currentPosition);
 
   void _onPositionUpdate(CameraPosition position) {
     if (prevCameraPosition != null) {

@@ -1,9 +1,13 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:jc_service_wrapper/jc_service_wrapper.dart';
 import 'package:jc_service_wrapper/src/widgets/map_location_picker/animated_pin.dart';
 import 'package:jc_service_wrapper/src/widgets/map_location_picker/models/map_controller.dart';
+import 'package:jc_service_wrapper/src/widgets/map_location_picker/models/web_camera_control_position.dart';
+import 'package:jc_service_wrapper/src/widgets/map_location_picker/models/web_gesture_handling.dart';
 import 'google_map_location_picker.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as g show LatLng;
 
@@ -38,6 +42,10 @@ class MapLocationPicker extends StatefulWidget {
     this.overrideServiceType,
     this.clickedMarkerMoveCamera = true,
     this.cloudMapId,
+    this.webGestureHandling,
+    this.webCameraControlPosition,
+    this.webCameraControlEnabled = true,
+    this.gestureRecognizers,
     super.key,
   });
 
@@ -67,16 +75,20 @@ class MapLocationPicker extends StatefulWidget {
   final ServiceType? overrideServiceType;
   final bool clickedMarkerMoveCamera;
   final String? cloudMapId;
+  final WebGestureHandling? webGestureHandling;
+  final WebCameraControlPosition? webCameraControlPosition;
+  final bool webCameraControlEnabled;
+  final Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers;
 
   @override
   State<MapLocationPicker> createState() => _MapLocationPickerState();
 }
 
 class _MapLocationPickerState extends State<MapLocationPicker> {
-
   Map<g.LatLng, bool> googleMarkers = {};
 
-  late ServiceType serviceType = widget.overrideServiceType ?? ServiceWrapper().serviceType;
+  late ServiceType serviceType =
+      widget.overrideServiceType ?? ServiceWrapper().serviceType;
   late MapController mapController = MapController(serviceType);
 
   @override
@@ -87,23 +99,24 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
 
   @override
   void didUpdateWidget(covariant MapLocationPicker oldWidget) {
-    if(widget.overrideServiceType != null && serviceType != widget.overrideServiceType){
+    if (widget.overrideServiceType != null &&
+        serviceType != widget.overrideServiceType) {
       serviceType = widget.overrideServiceType ?? ServiceWrapper().serviceType;
       mapController = MapController(serviceType);
-      if(mounted){
+      if (mounted) {
         setState(() {});
       }
     }
 
-    if(widget.markersSelectedMap != oldWidget.markersSelectedMap){
+    if (widget.markersSelectedMap != oldWidget.markersSelectedMap) {
       _updateMarkers();
     }
 
     super.didUpdateWidget(oldWidget);
   }
 
-  void _updateMarkers(){
-    if(serviceType == ServiceType.GMS || serviceType == ServiceType.WEB){
+  void _updateMarkers() {
+    if (serviceType == ServiceType.GMS || serviceType == ServiceType.WEB) {
       widget.markersSelectedMap.forEach((k, v) {
         try {
           googleMarkers[k.toGoogle()] = v;
@@ -113,14 +126,14 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
       googleMarkers = Map.of(googleMarkers);
     }
 
-    if(mounted){
+    if (mounted) {
       setState(() {});
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if(!ServiceWrapper().isInit && widget.overrideServiceType == null){
+    if (!ServiceWrapper().isInit && widget.overrideServiceType == null) {
       return Center(
         child: Text(
           'Initialize ServiceWrapper before using this widget',
@@ -128,12 +141,13 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
       );
     }
 
-    final serviceType = widget.overrideServiceType ?? ServiceWrapper().serviceType;
+    final serviceType =
+        widget.overrideServiceType ?? ServiceWrapper().serviceType;
     final MapController mapController = MapController(serviceType);
     switch (serviceType) {
       case ServiceType.GMS:
       case ServiceType.WEB:
-         return GoogleMapLocationPicker(
+        return GoogleMapLocationPicker(
           initialCameraPosition: widget.initialCameraPosition.toGoogle(),
           myLocation: widget.myLocation?.toGoogle(),
           onMapCreated: (controller) {
@@ -150,7 +164,8 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
           },
           pinBuilder: widget.pinBuilder,
           onBuildInfoWindow: (context, latLng) {
-            return widget.onBuildInfoWindow?.call(context, LatLng.fromGoogle(latLng));
+            return widget.onBuildInfoWindow
+                ?.call(context, LatLng.fromGoogle(latLng));
           },
           selectInitialPosition: widget.selectInitialPosition,
           scrollGesturesEnabled: widget.scrollGesturesEnabled,
@@ -173,6 +188,10 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
           overridePixelRatio: widget.overridePixelRatio,
           infoWindowOffset: widget.infoWindowOffset,
           clickedMarkerMoveCamera: widget.clickedMarkerMoveCamera,
+          webCameraControlEnabled: widget.webCameraControlEnabled,
+          webGestureHandling: widget.webGestureHandling?.toGoogle(),
+          webCameraControlPosition: widget.webCameraControlPosition?.toGoogle(),
+          gestureRecognizers: widget.gestureRecognizers,
         );
       default:
     }
