@@ -305,7 +305,8 @@ class ServiceWrapper{
     String? bigPictureUrl,
     String? largeIconUrl,
     int? timeoutAfter,
-    int? when,
+    int? when,    bool usesChronometer = false,
+    bool chronometerCountDown = false,
     List<AndroidNotificationAction>? androidActions,
   }) async {
     switch(serviceType){
@@ -327,6 +328,8 @@ class ServiceWrapper{
           isHtmlFormat: isHtmlFormat,
           timeoutAfter: timeoutAfter,
           when: when,
+          usesChronometer: usesChronometer,
+          chronometerCountDown: chronometerCountDown,
           androidActions: androidActions,
         );
       default:
@@ -353,6 +356,8 @@ class ServiceWrapper{
     String? largeIconUrl,
     int? timeoutAfter,
     int? when,
+    bool usesChronometer = false,
+    bool chronometerCountDown = false,
     List<AndroidNotificationAction>? androidActions,
   }) async {
     if(defaultTargetPlatform == TargetPlatform.android){
@@ -381,6 +386,8 @@ class ServiceWrapper{
           isHtmlFormat: isHtmlFormat,
           timeoutAfter: timeoutAfter,
           when: when,
+          usesChronometer: usesChronometer,
+          chronometerCountDown: chronometerCountDown,
           androidActions: androidActions,
         );
         break;

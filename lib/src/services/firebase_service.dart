@@ -358,6 +358,8 @@ class FirebaseService extends Service{
     bool isHtmlFormat = false,
     int? timeoutAfter,
     int? when,
+    bool usesChronometer = false,
+    bool chronometerCountDown = false,
     List<AndroidNotificationAction>? androidActions,
   }) async {
     await initLocalNotification();
@@ -379,6 +381,8 @@ class FirebaseService extends Service{
           isHtmlFormat: isHtmlFormat,
           timeoutAfter: timeoutAfter,
           when: when,
+          usesChronometer: usesChronometer,
+          chronometerCountDown: chronometerCountDown,
           androidActions: androidActions,
         ),
         payload: payload
@@ -403,6 +407,8 @@ class FirebaseService extends Service{
     required DateTime scheduledDate,
     int? timeoutAfter,
     int? when,
+    bool usesChronometer = false,
+    bool chronometerCountDown = false,
     List<AndroidNotificationAction>? androidActions,
   }) async {
     await initLocalNotification();
@@ -425,6 +431,8 @@ class FirebaseService extends Service{
         isHtmlFormat: isHtmlFormat,
         timeoutAfter: timeoutAfter,
         when: when,
+        usesChronometer: usesChronometer,
+        chronometerCountDown: chronometerCountDown,
         androidActions: androidActions,
       ),
       payload: payload,
@@ -446,6 +454,8 @@ class FirebaseService extends Service{
     bool isHtmlFormat = false,
     int? timeoutAfter,
     int? when,
+    bool usesChronometer = false,
+    bool chronometerCountDown = false,
     List<AndroidNotificationAction>? androidActions,
   }) async {
     final bigPictureObj = _getBase64StringFromBytes(bigPicture);
@@ -490,6 +500,8 @@ class FirebaseService extends Service{
         largeIcon: _getBase64StringFromBytes(largeIcon),
         timeoutAfter: timeoutAfter,
         when: when,
+        usesChronometer: usesChronometer,
+        chronometerCountDown: chronometerCountDown,
         actions: androidActions,
       ),
       iOS: DarwinNotificationDetails(
