@@ -412,6 +412,8 @@ class FirebaseService extends Service{
     int? when,
     bool usesChronometer = false,
     bool chronometerCountDown = false,
+    AndroidScheduleMode androidScheduleMode = AndroidScheduleMode.exactAllowWhileIdle,
+    DateTimeComponents? matchDateTimeComponents,
     List<AndroidNotificationAction>? androidActions,
   }) async {
     await initLocalNotification();
@@ -440,7 +442,8 @@ class FirebaseService extends Service{
         androidActions: androidActions,
       ),
       payload: payload,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: androidScheduleMode,
+      matchDateTimeComponents: matchDateTimeComponents,
     );
   }
 

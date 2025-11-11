@@ -306,7 +306,8 @@ class ServiceWrapper{
     String? bigPictureUrl,
     String? largeIconUrl,
     int? timeoutAfter,
-    int? when,    bool usesChronometer = false,
+    int? when,
+    bool usesChronometer = false,
     bool chronometerCountDown = false,
     List<AndroidNotificationAction>? androidActions,
   }) async {
@@ -361,11 +362,13 @@ class ServiceWrapper{
     int? when,
     bool usesChronometer = false,
     bool chronometerCountDown = false,
+    AndroidScheduleMode androidScheduleMode = AndroidScheduleMode.exactAllowWhileIdle,
+    DateTimeComponents? matchDateTimeComponents,
     List<AndroidNotificationAction>? androidActions,
   }) async {
-    if(defaultTargetPlatform == TargetPlatform.android){
+    if(defaultTargetPlatform == TargetPlatform.android && androidScheduleMode == AndroidScheduleMode.alarmClock){
       final result = await Permission.scheduleExactAlarm.request();
-      print(result);
+      //print(result);
       if(result.isDenied || result.isPermanentlyDenied) return false;
     }
 
@@ -392,6 +395,8 @@ class ServiceWrapper{
           when: when,
           usesChronometer: usesChronometer,
           chronometerCountDown: chronometerCountDown,
+          androidScheduleMode: androidScheduleMode,
+          matchDateTimeComponents: matchDateTimeComponents,
           androidActions: androidActions,
         );
         break;
