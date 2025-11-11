@@ -362,11 +362,12 @@ class ServiceWrapper{
     int? when,
     bool usesChronometer = false,
     bool chronometerCountDown = false,
-    AndroidScheduleMode androidScheduleMode = AndroidScheduleMode.exactAllowWhileIdle,
+    bool isExactAlarm = false,
+    AndroidScheduleMode androidScheduleMode = AndroidScheduleMode.inexactAllowWhileIdle,
     DateTimeComponents? matchDateTimeComponents,
     List<AndroidNotificationAction>? androidActions,
   }) async {
-    if(defaultTargetPlatform == TargetPlatform.android && androidScheduleMode == AndroidScheduleMode.alarmClock){
+    if(defaultTargetPlatform == TargetPlatform.android && isExactAlarm){
       final result = await Permission.scheduleExactAlarm.request();
       //print(result);
       if(result.isDenied || result.isPermanentlyDenied) return false;
