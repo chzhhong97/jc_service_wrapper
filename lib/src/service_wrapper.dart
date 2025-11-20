@@ -309,11 +309,14 @@ class ServiceWrapper{
     bool onGoing = false,
     String? channelId,
     String? channelName,
+    String? channelDescription,
     bool isHtmlFormat = false,
     String? bigPictureUrl,
     String? largeIconUrl,
     int? timeoutAfter,
     int? when,
+    bool usesChronometer = false,
+    bool chronometerCountDown = false,
     List<AndroidNotificationAction>? androidActions,
   }) async {
     switch(serviceType){
@@ -332,9 +335,12 @@ class ServiceWrapper{
           bigText: bigText,
           channelId: channelId,
           channelName: channelName,
+          channelDescription: channelDescription,
           isHtmlFormat: isHtmlFormat,
           timeoutAfter: timeoutAfter,
           when: when,
+          usesChronometer: usesChronometer,
+          chronometerCountDown: chronometerCountDown,
           androidActions: androidActions,
         );
       case ServiceType.HMS:
@@ -352,6 +358,7 @@ class ServiceWrapper{
           bigText: bigText,
           channelId: channelId,
           channelName: channelName,
+          channelDescription: channelDescription,
         );
       default:
         return;
@@ -372,16 +379,22 @@ class ServiceWrapper{
     required DateTime scheduledDate,
     String? channelId,
     String? channelName,
+    String? channelDescription,
     bool isHtmlFormat = false,
     String? bigPictureUrl,
     String? largeIconUrl,
     int? timeoutAfter,
     int? when,
+    bool usesChronometer = false,
+    bool chronometerCountDown = false,
+    bool isExactAlarm = false,
+    AndroidScheduleMode androidScheduleMode = AndroidScheduleMode.inexactAllowWhileIdle,
+    DateTimeComponents? matchDateTimeComponents,
     List<AndroidNotificationAction>? androidActions,
   }) async {
-    if(defaultTargetPlatform == TargetPlatform.android){
+    if(defaultTargetPlatform == TargetPlatform.android && isExactAlarm){
       final result = await Permission.scheduleExactAlarm.request();
-      print(result);
+      //print(result);
       if(result.isDenied || result.isPermanentlyDenied) return false;
     }
 
@@ -402,9 +415,14 @@ class ServiceWrapper{
             scheduledDate: scheduledDate,
           channelId: channelId,
           channelName: channelName,
+          channelDescription: channelDescription,
           isHtmlFormat: isHtmlFormat,
           timeoutAfter: timeoutAfter,
           when: when,
+          usesChronometer: usesChronometer,
+          chronometerCountDown: chronometerCountDown,
+          androidScheduleMode: androidScheduleMode,
+          matchDateTimeComponents: matchDateTimeComponents,
           androidActions: androidActions,
         );
         break;
@@ -424,6 +442,7 @@ class ServiceWrapper{
             scheduledDate: scheduledDate,
           channelId: channelId,
           channelName: channelName,
+          channelDescription: channelDescription,
         );
         break;
       default:

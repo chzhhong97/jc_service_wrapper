@@ -310,13 +310,14 @@ class HuaweiService extends Service{
     bool onGoing = false,
     String? channelId,
     String? channelName,
+    String? channelDescription,
   }) async {
     final channelInfo = await getNotificationChannel();
 
     Map<String, dynamic> localNotification = {
       HMSLocalNotificationAttr.CHANNEL_ID: channelId ?? channelInfo['CHANNEL_ID'] ?? CHANNEL_ID,
       HMSLocalNotificationAttr.CHANNEL_NAME: channelName ?? channelInfo['CHANNEL_NAME'] ?? CHANNEL_NAME,
-      HMSLocalNotificationAttr.CHANNEL_DESCRIPTION: channelInfo['CHANNEL_DESCRIPTION'] ?? CHANNEL_DESCRIPTION,
+      HMSLocalNotificationAttr.CHANNEL_DESCRIPTION: channelDescription ?? channelInfo['CHANNEL_DESCRIPTION'] ?? CHANNEL_DESCRIPTION,
       HMSLocalNotificationAttr.TITLE: title,
       HMSLocalNotificationAttr.MESSAGE: body,
       HMSLocalNotificationAttr.ONGOING: onGoing,
@@ -347,6 +348,7 @@ class HuaweiService extends Service{
     bool onGoing = false,
     String? channelId,
     String? channelName,
+    String? channelDescription,
     required DateTime scheduledDate
   }) async {
 
@@ -355,7 +357,7 @@ class HuaweiService extends Service{
     Map<String, dynamic> localNotification = {
       HMSLocalNotificationAttr.CHANNEL_ID: channelId ?? channelInfo['CHANNEL_ID'] ?? CHANNEL_ID,
       HMSLocalNotificationAttr.CHANNEL_NAME: channelName ?? channelInfo['CHANNEL_NAME'] ?? CHANNEL_NAME,
-      HMSLocalNotificationAttr.CHANNEL_DESCRIPTION: channelInfo['CHANNEL_DESCRIPTION'] ?? CHANNEL_DESCRIPTION,
+      HMSLocalNotificationAttr.CHANNEL_DESCRIPTION: channelDescription ?? channelInfo['CHANNEL_DESCRIPTION'] ?? CHANNEL_DESCRIPTION,
       HMSLocalNotificationAttr.TITLE: title,
       HMSLocalNotificationAttr.MESSAGE: body,
       HMSLocalNotificationAttr.ONGOING: onGoing,
