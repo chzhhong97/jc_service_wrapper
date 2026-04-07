@@ -213,7 +213,7 @@ class ServiceWrapper{
     }
   }
 
-  Stream<String>? get onTokenRefresh {
+  Stream<String>? get onTokenRefreshStream {
     switch(serviceType){
       case ServiceType.GMS:
         return resolveServiceSpecificImplementation<FirebaseService>()
@@ -256,6 +256,22 @@ class ServiceWrapper{
       case ServiceType.WEB:
         return resolveServiceSpecificImplementation<WebService>()
             ?.onMessageOpened(onMessageReceived);
+      default:
+        return null;
+    }
+  }
+
+  StreamSubscription<String>? onTokenRefresh(Function(String token) onTokenRefreshed) {
+    switch(serviceType){
+      case ServiceType.GMS:
+        return resolveServiceSpecificImplementation<FirebaseService>()
+            ?.onTokenRefresh(onTokenRefreshed);
+      case ServiceType.HMS:
+        return resolveServiceSpecificImplementation<HuaweiService>()
+            ?.onTokenRefresh(onTokenRefreshed);
+      case ServiceType.WEB:
+        return resolveServiceSpecificImplementation<WebService>()
+            ?.onTokenRefresh(onTokenRefreshed);
       default:
         return null;
     }
@@ -599,6 +615,7 @@ abstract class Service{
   Future<RemoteMessageWrapper?> getInitialMessage() => throw UnimplementedError('getInitialMessage() has not been implemented');
   StreamSubscription<RemoteMessageWrapper> onMessage(OnMessageReceived onMessageReceived) => onMessageReceivedStream.listen(onMessageReceived);
   StreamSubscription<RemoteMessageWrapper> onMessageOpened(OnMessageReceived onMessageReceived) => onMessageOpenedStream.listen(onMessageReceived);
+  StreamSubscription<String> onTokenRefresh(Function(String token) onTokenRefreshed) => onTokenRefreshStream.listen(onTokenRefreshed);
   Future<String?> getToken() => throw UnimplementedError('getToken() has not been implemented');
   Future<void> deleteToken() => throw UnimplementedError('deleteToken() has not been implemented');
   Future<void> subscribeToTopic(String topic) => throw UnimplementedError('subscribeToTopic() has not been implemented');
