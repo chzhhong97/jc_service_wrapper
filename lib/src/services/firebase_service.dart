@@ -124,6 +124,15 @@ class FirebaseService extends Service{
           debugPrint('FirebaseOnMessageOpenedException: $e');
         }
       });
+
+      FirebaseMessaging.instance.onTokenRefresh.listen((event) {
+        try{
+          tokenRefreshStreamController.add(event);
+        }
+        catch(e){
+          debugPrint('FirebaseOnTokenRefreshException: $e');
+        }
+      });
     }
     catch(e){
       debugPrint('FirebaseInitializeException: $e');
@@ -298,6 +307,17 @@ class FirebaseService extends Service{
     }
     return null;
   }
+
+  @override
+  Future<void> deleteToken() async {
+    try{
+      return FirebaseMessaging.instance.deleteToken();
+    }
+    catch(e){
+      debugPrint('FirebaseDeleteTokenException: $e');
+    }
+  }
+
 
   @override
   void onFlutterError(FlutterErrorDetails errorDetails){

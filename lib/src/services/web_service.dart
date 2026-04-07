@@ -47,6 +47,15 @@ class WebService extends Service {
       }
     });
 
+    FirebaseMessaging.instance.onTokenRefresh.listen((event) {
+      try{
+        tokenRefreshStreamController.add(event);
+      }
+      catch(e){
+        debugPrint('FirebaseOnTokenRefreshException: $e');
+      }
+    });
+
     getToken();
   }
 
@@ -102,6 +111,16 @@ class WebService extends Service {
           vapidKey: vapidKey,
           maxRetries: maxRetries != null ? maxRetries - 1 : null,
           webTokenOptions: webTokenOptions);
+    }
+  }
+
+  @override
+  Future<void> deleteToken() async {
+    try{
+      return FirebaseMessaging.instance.deleteToken();
+    }
+    catch(e){
+      debugPrint('FirebaseDeleteTokenException: $e');
     }
   }
 
