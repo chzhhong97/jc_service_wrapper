@@ -271,6 +271,9 @@ class HuaweiService extends Service{
   Future<String?> getToken() => _pushToken.future;
 
   @override
+  Future<void> deleteToken() => Push.deleteToken("");
+
+  @override
   void onFlutterError(FlutterErrorDetails errorDetails) {
     try{
       AGCCrash.instance.onFlutterError(errorDetails);
