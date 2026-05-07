@@ -17,6 +17,16 @@ class WebService extends Service {
   WebTokenOptions? webTokenOptions;
   bool _previousStatus = false;
 
+  FirebaseApp? _firebaseApp;
+
+  @override
+  FirebaseApp get firebaseApp {
+    if(_firebaseApp == null){
+      throw Exception("Call initialize before access this");
+    }
+    return _firebaseApp!;
+  }
+
   @override
   Future<void> initialize(
     OnBackgroundNotification handler, {
@@ -27,7 +37,7 @@ class WebService extends Service {
     this.vapidKey = vapidKey;
     this.webTokenOptions = webTokenOptions;
 
-    await Firebase.initializeApp(options: options);
+    _firebaseApp = await Firebase.initializeApp(options: options);
 
     //FirebaseMessaging.onBackgroundMessage(firebaseBackgroundMessageHandler);
     FirebaseMessaging.onMessage.listen((event) {

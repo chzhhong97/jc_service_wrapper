@@ -229,6 +229,19 @@ class ServiceWrapper{
     }
   }
 
+  FirebaseApp? get firebaseApp {
+    switch(serviceType){
+      case ServiceType.GMS:
+        return resolveServiceSpecificImplementation<FirebaseService>()
+            ?.firebaseApp;
+      case ServiceType.WEB:
+        return resolveServiceSpecificImplementation<WebService>()
+            ?.firebaseApp;
+      default:
+        return null;
+    }
+  }
+
   StreamSubscription<RemoteMessageWrapper>? onMessage(OnMessageReceived onMessageReceived) {
     switch(serviceType){
       case ServiceType.GMS:
@@ -546,6 +559,8 @@ abstract class Service{
   String get CHANNEL_NAME => "Notification Channel";
   String get CHANNEL_DESCRIPTION => "Use to post notification";
   Color get notificationColor => const Color(0xffFC9220);
+
+  FirebaseApp? get firebaseApp => throw UnimplementedError('get firebaseApp has not been implemented');
 
   Future<Map<String, String>> getNotificationChannel() async {
     final packageInfo = await PackageInfo.fromPlatform();
