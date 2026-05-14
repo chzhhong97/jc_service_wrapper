@@ -8,14 +8,14 @@ environment:
   flutter: ">=3.32.5"
 
 dependencies:
-  flutter_timezone:
+  flutter_timezone: ^5.0.2
   flutter_local_notifications: ^20.1.0
-  flutter_hms_gms_availability:
-  permission_handler:
-  package_info_plus:
+  flutter_hms_gms_availability: ^3.10.0
+  permission_handler: ^12.0.1
+  package_info_plus: ^9.0.1
   path_provider:
-  timezone:
-  intl:
+  timezone: ^0.10.1
+  intl: ^0.20.2
   jc_utils:
     git:
       url: https://github.com/chzhhong97/flutter_packages.git
@@ -27,10 +27,11 @@ dependencies:
       path: packages/jc_widgets
 
   ## HUAWEI
-  huawei_map:
-  huawei_push:
-  huawei_location:
+  huawei_map: ^6.12.0+301
+  huawei_push: ^6.14.0+300
+  huawei_location: ^6.16.0+300
   agconnect_crash:
+    git: https://github.com/peczwy/agconnect_crash_fork
   #agconnect_core:
   agconnect_core_upgrade:
     git: https://github.com/KareemMansour-Akhdar/agconnect_core_upgrade
