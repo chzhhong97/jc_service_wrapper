@@ -31,7 +31,9 @@ dependencies:
   huawei_push:
   huawei_location:
   agconnect_crash:
-  agconnect_core:
+  #agconnect_core:
+  agconnect_core_upgrade:
+    git: https://github.com/KareemMansour-Akhdar/agconnect_core_upgrade
 
   flutter:
     sdk: flutter
