@@ -33,22 +33,26 @@ void _firebaseMessagingCallbackDispatcher() {
   // This is where we handle background events from the native portion of the plugin.
   _channel.setMethodCallHandler((MethodCall call) async {
     if (call.method == 'MessagingBackground#onMessage') {
-      final CallbackHandle handle =
-      CallbackHandle.fromRawHandle(call.arguments['userCallbackHandle']);
+      final CallbackHandle handle = CallbackHandle.fromRawHandle(
+        call.arguments['userCallbackHandle'],
+      );
 
       // PluginUtilities.getCallbackFromHandle performs a lookup based on the
       // callback handle and returns a tear-off of the original callback.
-      final closure = PluginUtilities.getCallbackFromHandle(handle)!
-      as OnBackgroundNotification;
+      final closure =
+          PluginUtilities.getCallbackFromHandle(handle)!
+              as OnBackgroundNotification;
 
       try {
-        Map<String, dynamic> messageMap =
-        Map<String, dynamic>.from(call.arguments['message']);
+        Map<String, dynamic> messageMap = Map<String, dynamic>.from(
+          call.arguments['message'],
+        );
         await closure(RemoteMessageWrapper.fromFirebaseMessage(messageMap));
       } catch (e) {
         // ignore: avoid_print
         print(
-            'FirebaseService Messaging: An error occurred in your background messaging handler:');
+          'FirebaseService Messaging: An error occurred in your background messaging handler:',
+        );
         // ignore: avoid_print
         print(e);
       }
@@ -65,13 +69,15 @@ void _firebaseMessagingCallbackDispatcher() {
 @pragma('vm:entry-point')
 Future<void> _onBackgroundMessageReceived(RemoteMessage message) async {
   debugPrint('FirebaseServiceOnBackgroundMessageReceived: ${message.toMap()}');
-  debugPrint('FirebaseServiceOnBackgroundMessageStreamAvailable: ${FirebaseService._onBackgroundMessage != null}');
+  debugPrint(
+    'FirebaseServiceOnBackgroundMessageStreamAvailable: ${FirebaseService._onBackgroundMessage != null}',
+  );
   FirebaseService._onBackgroundMessage?.add(message);
 }
 
-class FirebaseService extends Service{
-
-  final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
+class FirebaseService extends Service {
+  final FlutterLocalNotificationsPlugin _notificationsPlugin =
+      FlutterLocalNotificationsPlugin();
   bool _bgHandlerInitialized = false;
   Completer? _localNotificationInitialized;
   final MethodChannel channel = const MethodChannel(
@@ -83,94 +89,108 @@ class FirebaseService extends Service{
 
   @override
   FirebaseApp get firebaseApp {
-    if(_firebaseApp == null){
+    if (_firebaseApp == null) {
       throw Exception("Call initialize before access this");
     }
     return _firebaseApp!;
   }
 
   @override
-  Future<void> initialize(OnBackgroundNotification handler, {FirebaseOptions? options,  List<AndroidNotificationChannel> androidLocalNotificationChannelList = const []}) async {
-
-    try{
-      _firebaseApp = await Firebase.initializeApp(
-          options: options
-      );
+  Future<void> initialize(
+    OnBackgroundNotification handler, {
+    FirebaseOptions? options,
+    List<AndroidNotificationChannel> androidLocalNotificationChannelList =
+        const [],
+    bool requestPermission = true,
+  }) async {
+    try {
+      _firebaseApp = await Firebase.initializeApp(options: options);
 
       await FirebaseMessaging.instance
           .setForegroundNotificationPresentationOptions();
 
-      await FirebaseMessaging.instance.requestPermission(
+      if(requestPermission){
+        await FirebaseMessaging.instance.requestPermission(
           alert: true,
           announcement: false,
           badge: true,
           carPlay: false,
           criticalAlert: false,
           provisional: false,
-          sound: true
-      );
+          sound: true,
+        );
+      }
 
       debugPrint('Firebase FCM Token: ${await getToken()}');
 
       //FirebaseMessaging.onBackgroundMessage(firebaseBackgroundMessageHandler);
       _registerBackgroundMessageHandler(handler);
       FirebaseMessaging.onMessage.listen((event) {
-        try{
+        try {
           debugPrint('FirebaseOnMessage: ${event.toMap()}');
-          onReceivedStream.add(RemoteMessageWrapper.fromFirebaseMessage(event.toMap()));
-        }
-        catch(e){
+          onReceivedStream.add(
+            RemoteMessageWrapper.fromFirebaseMessage(event.toMap()),
+          );
+        } catch (e) {
           debugPrint('FirebaseOnMessageException: $e');
         }
-
       });
 
       FirebaseMessaging.onMessageOpenedApp.listen((event) {
-        try{
+        try {
           debugPrint('FirebaseOnMessageOpened: ${event.toMap()}');
-          onOpenedStream.add(RemoteMessageWrapper.fromFirebaseMessage(event.toMap()));
-        }
-        catch(e){
+          onOpenedStream.add(
+            RemoteMessageWrapper.fromFirebaseMessage(event.toMap()),
+          );
+        } catch (e) {
           debugPrint('FirebaseOnMessageOpenedException: $e');
         }
       });
 
       FirebaseMessaging.instance.onTokenRefresh.listen((event) {
-        try{
+        try {
           tokenRefreshStreamController.add(event);
-        }
-        catch(e){
+        } catch (e) {
           debugPrint('FirebaseOnTokenRefreshException: $e');
         }
       });
-    }
-    catch(e){
+    } catch (e) {
       debugPrint('FirebaseInitializeException: $e');
     }
 
-    try{
-      final remoteMessage = await FirebaseMessaging.instance.getInitialMessage();
-      if(remoteMessage != null){
-        onOpenedStream.add(RemoteMessageWrapper.fromFirebaseMessage(remoteMessage.toMap()));
+    try {
+      final remoteMessage = await FirebaseMessaging.instance
+          .getInitialMessage();
+      if (remoteMessage != null) {
+        onOpenedStream.add(
+          RemoteMessageWrapper.fromFirebaseMessage(remoteMessage.toMap()),
+        );
       }
-    }
-    catch(e){
+    } catch (e) {
       debugPrint('FirebaseGetInitialMsgException: $e');
     }
 
-    await initLocalNotification(androidLocalNotificationChannelList: androidLocalNotificationChannelList);
+    await initLocalNotification(
+      androidLocalNotificationChannelList: androidLocalNotificationChannelList,
+    );
   }
 
   @override
-  Future<void> initLocalNotification({List<AndroidNotificationChannel> androidLocalNotificationChannelList = const []}) async {
+  Future<void> initLocalNotification({
+    List<AndroidNotificationChannel> androidLocalNotificationChannelList =
+        const [],
+  }) async {
     debugPrint('Local Notification: Start init');
-    debugPrint('Local Notification: Completer, isNull: ${_localNotificationInitialized == null}, isCompleted: ${_localNotificationInitialized?.isCompleted}');
-    if(_localNotificationInitialized?.isCompleted == true){
+    debugPrint(
+      'Local Notification: Completer, isNull: ${_localNotificationInitialized == null}, isCompleted: ${_localNotificationInitialized?.isCompleted}',
+    );
+    if (_localNotificationInitialized?.isCompleted == true) {
       debugPrint('Local Notification: already initialize');
       return;
     }
 
-    if(_localNotificationInitialized != null && _localNotificationInitialized?.isCompleted != true){
+    if (_localNotificationInitialized != null &&
+        _localNotificationInitialized?.isCompleted != true) {
       debugPrint('Local Notification: Waiting initialize');
       await _localNotificationInitialized?.future;
       return;
@@ -184,26 +204,27 @@ class FirebaseService extends Service{
 
     await _notificationsPlugin.initialize(
       settings: settings,
-      onDidReceiveNotificationResponse: (response){
+      onDidReceiveNotificationResponse: (response) {
         debugPrint('On Local Notification Tap');
-        if(response.payload != null){
-          try{
+        if (response.payload != null) {
+          try {
             final json = jsonDecode(response.payload.toString());
             onOpenedStream.add(RemoteMessageWrapper.fromJson(json));
-          }
-          catch (e){
+          } catch (e) {
             debugPrint('$e');
-            debugPrint('Please set local notification payload with remote json');
+            debugPrint(
+              'Please set local notification payload with remote json',
+            );
           }
         }
-      }
+      },
     );
 
     tz.initializeTimeZones();
     final locationName = await FlutterTimezone.getLocalTimezone();
     tz.setLocalLocation(tz.getLocation(locationName.identifier));
 
-    if(Platform.isAndroid){
+    if (Platform.isAndroid) {
       final channelInfo = await getNotificationChannel();
       var androidNotificationChannel = AndroidNotificationChannel(
         channelInfo['CHANNEL_ID'] ?? CHANNEL_ID,
@@ -212,13 +233,17 @@ class FirebaseService extends Service{
         importance: Importance.max,
       );
       await _notificationsPlugin
-          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >()
           ?.createNotificationChannel(androidNotificationChannel);
 
-      if(androidLocalNotificationChannelList.isNotEmpty){
-        for(final channel in androidLocalNotificationChannelList){
+      if (androidLocalNotificationChannelList.isNotEmpty) {
+        for (final channel in androidLocalNotificationChannelList) {
           await _notificationsPlugin
-              .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >()
               ?.createNotificationChannel(channel);
         }
       }
@@ -235,26 +260,35 @@ class FirebaseService extends Service{
 
   @override
   Future<void> deleteAllNotificationChannel() async {
-    if(Platform.isAndroid){
+    if (Platform.isAndroid) {
       final channelList = await _notificationsPlugin
-          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >()
           ?.getNotificationChannels();
 
-      if(channelList == null) return;
+      if (channelList == null) return;
 
-      for(final channel in channelList){
+      for (final channel in channelList) {
         await _notificationsPlugin
-            .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >()
             ?.deleteNotificationChannel(channelId: channel.id);
       }
     }
   }
 
-  Future<void> _registerBackgroundMessageHandler(OnBackgroundNotification handler) async {
+  Future<void> _registerBackgroundMessageHandler(
+    OnBackgroundNotification handler,
+  ) async {
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       FirebaseMessaging.onBackgroundMessage(_onBackgroundMessageReceived);
       _onBackgroundMessage = StreamControllerReEmitOnce<RemoteMessage>();
-      _onBackgroundMessage?.stream.listen((message) => handler(RemoteMessageWrapper.fromFirebaseMessage(message.toMap())));
+      _onBackgroundMessage?.stream.listen(
+        (message) =>
+            handler(RemoteMessageWrapper.fromFirebaseMessage(message.toMap())),
+      );
       return;
     }
 
@@ -267,8 +301,9 @@ class FirebaseService extends Service{
       final CallbackHandle bgHandle = PluginUtilities.getCallbackHandle(
         _firebaseMessagingCallbackDispatcher,
       )!;
-      final CallbackHandle userHandle =
-      PluginUtilities.getCallbackHandle(handler)!;
+      final CallbackHandle userHandle = PluginUtilities.getCallbackHandle(
+        handler,
+      )!;
       await channel.invokeMapMethod('Messaging#startBackgroundIsolate', {
         'pluginCallbackHandle': bgHandle.toRawHandle(),
         'userCallbackHandle': userHandle.toRawHandle(),
@@ -279,7 +314,7 @@ class FirebaseService extends Service{
   @override
   Future<RemoteMessageWrapper?> getInitialMessage() async {
     var initialMessage = await FirebaseMessaging.instance.getInitialMessage();
-    if(initialMessage != null){
+    if (initialMessage != null) {
       return RemoteMessageWrapper.fromFirebaseMessage(initialMessage.toMap());
     }
     return null;
@@ -287,32 +322,30 @@ class FirebaseService extends Service{
 
   @override
   Future<void> subscribeToTopic(String topic) async {
-    try{
+    try {
       await FirebaseMessaging.instance.subscribeToTopic(topic);
-    }
-    catch(e){
+    } catch (e) {
       debugPrint('FirebaseSubscribeTopicException: $e');
     }
   }
+
   @override
   Future<void> unsubscribeFromTopic(String topic) async {
-    try{
+    try {
       await FirebaseMessaging.instance.unsubscribeFromTopic(topic);
-    }
-    catch(e){
+    } catch (e) {
       debugPrint('FirebaseUnsubscribeTopicException: $e');
     }
   }
 
   @override
   Future<String?> getToken() async {
-    try{
+    try {
       /*if(defaultTargetPlatform == TargetPlatform.iOS){
         await FirebaseMessaging.instance.getAPNSToken();
       }*/
       return FirebaseMessaging.instance.getToken();
-    }
-    catch(e){
+    } catch (e) {
       debugPrint('FirebaseGetTokenException: $e');
     }
     return null;
@@ -320,50 +353,53 @@ class FirebaseService extends Service{
 
   @override
   Future<void> deleteToken() async {
-    try{
+    try {
       return FirebaseMessaging.instance.deleteToken();
-    }
-    catch(e){
+    } catch (e) {
       debugPrint('FirebaseDeleteTokenException: $e');
     }
   }
 
-
   @override
-  void onFlutterError(FlutterErrorDetails errorDetails){
-    try{
+  void onFlutterError(FlutterErrorDetails errorDetails) {
+    try {
       FirebaseCrashlytics.instance.recordFlutterError(errorDetails);
-    }
-    catch(e){
+    } catch (e) {
       debugPrint('FirebaseFlutterErrorException: $e');
     }
   }
+
   @override
-  void recordError(Object exception, StackTrace stackTrace){
-    try{
-      FirebaseCrashlytics.instance.recordError(exception, stackTrace, fatal: true);
-    }
-    catch(e){
+  void recordError(Object exception, StackTrace stackTrace) {
+    try {
+      FirebaseCrashlytics.instance.recordError(
+        exception,
+        stackTrace,
+        fatal: true,
+      );
+    } catch (e) {
       debugPrint('FirebaseRecordErrorException: $e');
     }
   }
 
   @override
   Future<bool> requestNotificationPermission() async {
-    try{
+    try {
       final status = await FirebaseMessaging.instance.requestPermission();
       return status.authorizationStatus == AuthorizationStatus.authorized;
-    }
-    catch(e){
+    } catch (e) {
       bool? status = false;
-      if(defaultTargetPlatform == TargetPlatform.iOS){
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
         status = await _notificationsPlugin
-            .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
+            .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin
+            >()
             ?.requestPermissions();
-      }
-      else if(defaultTargetPlatform == TargetPlatform.android){
+      } else if (defaultTargetPlatform == TargetPlatform.android) {
         status = await _notificationsPlugin
-            .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >()
             ?.requestNotificationsPermission();
       }
 
@@ -395,29 +431,29 @@ class FirebaseService extends Service{
   }) async {
     await initLocalNotification();
     return _notificationsPlugin.show(
-        id: id ?? 0,
+      id: id ?? 0,
+      title: title,
+      body: body,
+      notificationDetails: await _notificationDetails(
         title: title,
         body: body,
-        notificationDetails: await _notificationDetails(
-            title: title,
-            body: body,
-            bigText: bigText,
-            onGoing: onGoing,
-            icon: icon,
-            notificationColor: notificationColor,
-            bigPicture: bigPicture,
-            largeIcon: largeIcon,
-          channelId: channelId,
-          channelName: channelName,
-          channelDescription: channelDescription,
-          isHtmlFormat: isHtmlFormat,
-          timeoutAfter: timeoutAfter,
-          when: when,
-          usesChronometer: usesChronometer,
-          chronometerCountDown: chronometerCountDown,
-          androidActions: androidActions,
-        ),
-        payload: payload
+        bigText: bigText,
+        onGoing: onGoing,
+        icon: icon,
+        notificationColor: notificationColor,
+        bigPicture: bigPicture,
+        largeIcon: largeIcon,
+        channelId: channelId,
+        channelName: channelName,
+        channelDescription: channelDescription,
+        isHtmlFormat: isHtmlFormat,
+        timeoutAfter: timeoutAfter,
+        when: when,
+        usesChronometer: usesChronometer,
+        chronometerCountDown: chronometerCountDown,
+        androidActions: androidActions,
+      ),
+      payload: payload,
     );
   }
 
@@ -442,7 +478,8 @@ class FirebaseService extends Service{
     int? when,
     bool usesChronometer = false,
     bool chronometerCountDown = false,
-    AndroidScheduleMode androidScheduleMode = AndroidScheduleMode.exactAllowWhileIdle,
+    AndroidScheduleMode androidScheduleMode =
+        AndroidScheduleMode.exactAllowWhileIdle,
     DateTimeComponents? matchDateTimeComponents,
     List<AndroidNotificationAction>? androidActions,
   }) async {
@@ -454,9 +491,9 @@ class FirebaseService extends Service{
       scheduledDate: tz.TZDateTime.from(scheduledDate, tz.local),
       notificationDetails: await _notificationDetails(
         title: title,
-          body: body,
-          bigText: bigText,
-          onGoing: onGoing,
+        body: body,
+        bigText: bigText,
+        onGoing: onGoing,
         icon: icon,
         notificationColor: notificationColor,
         bigPicture: bigPicture,
@@ -501,25 +538,27 @@ class FirebaseService extends Service{
 
     final styleInformation = bigPictureObj != null
         ? BigPictureStyleInformation(
-      bigPictureObj,
-        contentTitle: title,
-        summaryText: body,
-      hideExpandedLargeIcon: largeIcon != null,
-      htmlFormatContent: isHtmlFormat,
-      htmlFormatContentTitle: isHtmlFormat,
-      htmlFormatSummaryText: isHtmlFormat,
-      htmlFormatTitle: isHtmlFormat,
-    )
-        : bigText != null ? BigTextStyleInformation(
-        bigText,
-        contentTitle: title,
-        summaryText: body,
-      htmlFormatTitle: isHtmlFormat,
-      htmlFormatSummaryText: isHtmlFormat,
-      htmlFormatContentTitle: isHtmlFormat,
-      htmlFormatContent: isHtmlFormat,
-      htmlFormatBigText: isHtmlFormat,
-    ) : null;
+            bigPictureObj,
+            contentTitle: title,
+            summaryText: body,
+            hideExpandedLargeIcon: largeIcon != null,
+            htmlFormatContent: isHtmlFormat,
+            htmlFormatContentTitle: isHtmlFormat,
+            htmlFormatSummaryText: isHtmlFormat,
+            htmlFormatTitle: isHtmlFormat,
+          )
+        : bigText != null
+        ? BigTextStyleInformation(
+            bigText,
+            contentTitle: title,
+            summaryText: body,
+            htmlFormatTitle: isHtmlFormat,
+            htmlFormatSummaryText: isHtmlFormat,
+            htmlFormatContentTitle: isHtmlFormat,
+            htmlFormatContent: isHtmlFormat,
+            htmlFormatBigText: isHtmlFormat,
+          )
+        : null;
 
     final channelInfo = await getNotificationChannel();
 
@@ -527,7 +566,10 @@ class FirebaseService extends Service{
       android: AndroidNotificationDetails(
         channelId ?? channelInfo['CHANNEL_ID'] ?? CHANNEL_ID,
         channelName ?? channelInfo['CHANNEL_NAME'] ?? CHANNEL_NAME,
-        channelDescription: channelDescription ?? channelInfo['CHANNEL_DESCRIPTION'] ?? CHANNEL_DESCRIPTION,
+        channelDescription:
+            channelDescription ??
+            channelInfo['CHANNEL_DESCRIPTION'] ??
+            CHANNEL_DESCRIPTION,
         icon: icon,
         color: notificationColor ?? this.notificationColor,
         importance: Importance.max,
@@ -548,30 +590,27 @@ class FirebaseService extends Service{
     );
   }
 
-  AndroidBitmap<Object>? _getBase64StringFromBytes(List<int>? bytes){
-    if(bytes == null) return null;
+  AndroidBitmap<Object>? _getBase64StringFromBytes(List<int>? bytes) {
+    if (bytes == null) return null;
 
-    try{
+    try {
       return ByteArrayAndroidBitmap.fromBase64String(base64Encode(bytes));
-    }
-    catch(e){
-
-    }
+    } catch (e) {}
 
     return null;
   }
 
-  Future<List<DarwinNotificationAttachment>> _getIOSBigPicture(List<int>? bytes) async {
-    if(defaultTargetPlatform == TargetPlatform.iOS && bytes != null){
+  Future<List<DarwinNotificationAttachment>> _getIOSBigPicture(
+    List<int>? bytes,
+  ) async {
+    if (defaultTargetPlatform == TargetPlatform.iOS && bytes != null) {
       final dir = await getTemporaryDirectory();
       final fileName = '${dir.path}/temp_image.png';
 
       final file = File(fileName);
       await file.writeAsBytes(bytes);
 
-      return [
-        DarwinNotificationAttachment(fileName),
-      ];
+      return [DarwinNotificationAttachment(fileName)];
     }
     return [];
   }
@@ -590,22 +629,17 @@ class FirebaseService extends Service{
 
   @override
   Future<LocationWrapper?> getCurrentLocation({Duration? timeLimit}) async {
-    try{
+    try {
       final position = await Geolocator.getCurrentPosition(
-        locationSettings: LocationSettings(
-          timeLimit: timeLimit,
-        ),
+        locationSettings: LocationSettings(timeLimit: timeLimit),
       );
       //print(position.toJson());
       return LocationWrapper.fromPosition(position.toJson());
-    }
-    on TimeoutException catch(e){
+    } on TimeoutException catch (e) {
       return LocationWrapper.timeoutException(e.message);
-    }
-    on LocationServiceDisabledException catch(e){
+    } on LocationServiceDisabledException catch (e) {
       return LocationWrapper.locationServiceDisabled(e.toString());
-    }
-    catch (e){
+    } catch (e) {
       return LocationWrapper.unknownException(e.toString());
     }
   }

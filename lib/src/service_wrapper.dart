@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_core/firebase_core.dart' hide FirebaseService;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:jc_service_wrapper/src/models/location_wrapper.dart';
 import 'package:jc_service_wrapper/src/models/remote_message_wrapper.dart';
 import 'package:jc_service_wrapper/src/services/empty_web_service.dart'
-  if(dart.library.js) 'package:jc_service_wrapper/src/services/web_service.dart';
+    if (dart.library.js) 'package:jc_service_wrapper/src/services/web_service.dart';
 import 'package:jc_service_wrapper/src/services/firebase_service.dart';
 import 'package:jc_service_wrapper/src/services/huawei_service.dart';
 import 'package:jc_service_wrapper/src/utils/service_utils.dart';
@@ -16,10 +16,10 @@ import 'package:jc_utils/jc_utils.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class ServiceWrapper{
+class ServiceWrapper {
   ServiceWrapper._();
   factory ServiceWrapper() => _instance;
-  static final ServiceWrapper _instance =  ServiceWrapper._();
+  static final ServiceWrapper _instance = ServiceWrapper._();
   ServiceType get serviceType => _serviceType;
   ServiceType _serviceType = ServiceType.NONE;
 
@@ -28,7 +28,7 @@ class ServiceWrapper{
   Future<void> initServiceType() async {
     _serviceType = await getServiceType();
 
-    switch(_serviceType){
+    switch (_serviceType) {
       case ServiceType.GMS:
         Service.instance = FirebaseService();
         break;
@@ -68,39 +68,42 @@ class ServiceWrapper{
   ///   })
   /// ```
   Future<void> initialize(
-      OnBackgroundNotification onBackgroundNotification,
-      {
-        FirebaseOptions? options,
-        WebTokenOptions? webTokenOptions,
-        String? vapidKey,
-        List<AndroidNotificationChannel> androidLocalNotificationChannelList = const [],
-      }) async {
-    if(isInit) return;
+    OnBackgroundNotification onBackgroundNotification, {
+    FirebaseOptions? options,
+    WebTokenOptions? webTokenOptions,
+    String? vapidKey,
+    List<AndroidNotificationChannel> androidLocalNotificationChannelList =
+        const [],
+    bool requestPermission = true,
+  }) async {
+    if (isInit) return;
     isInit = true;
 
     _serviceType = await getServiceType();
 
-    switch(_serviceType){
+    switch (_serviceType) {
       case ServiceType.GMS:
         Service.instance = FirebaseService();
         await resolveServiceSpecificImplementation<FirebaseService>()
             ?.initialize(
-            onBackgroundNotification,
-            options: options,
-            androidLocalNotificationChannelList: androidLocalNotificationChannelList
-        );
+              onBackgroundNotification,
+              options: options,
+              androidLocalNotificationChannelList:
+                  androidLocalNotificationChannelList,
+              requestPermission: requestPermission,
+            );
         break;
       case ServiceType.HMS:
         Service.instance = HuaweiService();
-        await resolveServiceSpecificImplementation<HuaweiService>()
-            ?.initialize(onBackgroundNotification);
+        await resolveServiceSpecificImplementation<HuaweiService>()?.initialize(
+          onBackgroundNotification,
+        );
         break;
       case ServiceType.WEB:
         Service.instance = WebService();
-        await resolveServiceSpecificImplementation<WebService>()
-            ?.initialize(
-            onBackgroundNotification,
-            options: options,
+        await resolveServiceSpecificImplementation<WebService>()?.initialize(
+          onBackgroundNotification,
+          options: options,
           vapidKey: vapidKey,
           webTokenOptions: webTokenOptions,
         );
@@ -109,7 +112,7 @@ class ServiceWrapper{
     }
 
     //crashlytics
-    FlutterError.onError = (error){
+    FlutterError.onError = (error) {
       onFlutterError(error);
     };
 
@@ -119,26 +122,24 @@ class ServiceWrapper{
     };
   }
 
-  T? resolveServiceSpecificImplementation<T extends Service>(){
-    if(T == Service){
+  T? resolveServiceSpecificImplementation<T extends Service>() {
+    if (T == Service) {
       throw ArgumentError.value(
         T,
         "The type argument must be a concrete subclass of"
-            "Service"
+        "Service",
       );
     }
 
-    if((serviceType == ServiceType.GMS &&
-      T == FirebaseService &&
-      Service.instance is FirebaseService) ||
+    if ((serviceType == ServiceType.GMS &&
+            T == FirebaseService &&
+            Service.instance is FirebaseService) ||
         (serviceType == ServiceType.HMS &&
             T == HuaweiService &&
             Service.instance is HuaweiService) ||
         (serviceType == ServiceType.WEB &&
             T == WebService &&
-            Service.instance is WebService
-        )
-    ){
+            Service.instance is WebService)) {
       return Service.instance as T?;
     }
 
@@ -146,12 +147,12 @@ class ServiceWrapper{
   }
 
   Future<ServiceType> getServiceType() async {
-    if(kIsWeb) return ServiceType.WEB;
+    if (kIsWeb) return ServiceType.WEB;
     return ServiceType.GMS;
   }
 
   Future<String?> getToken() async {
-    switch(serviceType){
+    switch (serviceType) {
       case ServiceType.GMS:
         return resolveServiceSpecificImplementation<FirebaseService>()
             ?.getToken();
@@ -159,15 +160,14 @@ class ServiceWrapper{
         return resolveServiceSpecificImplementation<HuaweiService>()
             ?.getToken();
       case ServiceType.WEB:
-        return resolveServiceSpecificImplementation<WebService>()
-            ?.getToken();
+        return resolveServiceSpecificImplementation<WebService>()?.getToken();
       default:
         return null;
     }
   }
 
   Future<void> deleteToken() async {
-    switch(serviceType){
+    switch (serviceType) {
       case ServiceType.GMS:
         return resolveServiceSpecificImplementation<FirebaseService>()
             ?.deleteToken();
@@ -182,7 +182,7 @@ class ServiceWrapper{
   }
 
   Stream<RemoteMessageWrapper>? get onMessageReceivedStream {
-    switch(serviceType){
+    switch (serviceType) {
       case ServiceType.GMS:
         return resolveServiceSpecificImplementation<FirebaseService>()
             ?.onMessageReceivedStream;
@@ -198,7 +198,7 @@ class ServiceWrapper{
   }
 
   Stream<RemoteMessageWrapper>? get onMessageOpenedStream {
-    switch(serviceType){
+    switch (serviceType) {
       case ServiceType.GMS:
         return resolveServiceSpecificImplementation<FirebaseService>()
             ?.onMessageOpenedStream;
@@ -214,7 +214,7 @@ class ServiceWrapper{
   }
 
   Stream<String>? get onTokenRefreshStream {
-    switch(serviceType){
+    switch (serviceType) {
       case ServiceType.GMS:
         return resolveServiceSpecificImplementation<FirebaseService>()
             ?.onTokenRefreshStream;
@@ -230,36 +230,41 @@ class ServiceWrapper{
   }
 
   FirebaseApp? get firebaseApp {
-    switch(serviceType){
+    switch (serviceType) {
       case ServiceType.GMS:
         return resolveServiceSpecificImplementation<FirebaseService>()
             ?.firebaseApp;
       case ServiceType.WEB:
-        return resolveServiceSpecificImplementation<WebService>()
-            ?.firebaseApp;
+        return resolveServiceSpecificImplementation<WebService>()?.firebaseApp;
       default:
         return null;
     }
   }
 
-  StreamSubscription<RemoteMessageWrapper>? onMessage(OnMessageReceived onMessageReceived) {
-    switch(serviceType){
+  StreamSubscription<RemoteMessageWrapper>? onMessage(
+    OnMessageReceived onMessageReceived,
+  ) {
+    switch (serviceType) {
       case ServiceType.GMS:
         return resolveServiceSpecificImplementation<FirebaseService>()
             ?.onMessage(onMessageReceived);
       case ServiceType.HMS:
-        return resolveServiceSpecificImplementation<HuaweiService>()
-            ?.onMessage(onMessageReceived);
+        return resolveServiceSpecificImplementation<HuaweiService>()?.onMessage(
+          onMessageReceived,
+        );
       case ServiceType.WEB:
-        return resolveServiceSpecificImplementation<WebService>()
-            ?.onMessage(onMessageReceived);
+        return resolveServiceSpecificImplementation<WebService>()?.onMessage(
+          onMessageReceived,
+        );
       default:
         return null;
     }
   }
 
-  StreamSubscription<RemoteMessageWrapper>? onMessageOpened(OnMessageReceived onMessageReceived) {
-    switch(serviceType){
+  StreamSubscription<RemoteMessageWrapper>? onMessageOpened(
+    OnMessageReceived onMessageReceived,
+  ) {
+    switch (serviceType) {
       case ServiceType.GMS:
         return resolveServiceSpecificImplementation<FirebaseService>()
             ?.onMessageOpened(onMessageReceived);
@@ -274,8 +279,10 @@ class ServiceWrapper{
     }
   }
 
-  StreamSubscription<String>? onTokenRefresh(Function(String token) onTokenRefreshed) {
-    switch(serviceType){
+  StreamSubscription<String>? onTokenRefresh(
+    Function(String token) onTokenRefreshed,
+  ) {
+    switch (serviceType) {
       case ServiceType.GMS:
         return resolveServiceSpecificImplementation<FirebaseService>()
             ?.onTokenRefresh(onTokenRefreshed);
@@ -304,6 +311,7 @@ class ServiceWrapper{
       default:
     }
   }
+
   Future<void> unsubscribeFromTopic(String topic) async {
     switch (serviceType) {
       case ServiceType.GMS:
@@ -371,30 +379,30 @@ class ServiceWrapper{
     bool chronometerCountDown = false,
     List<AndroidNotificationAction>? androidActions,
   }) async {
-    switch(serviceType){
+    switch (serviceType) {
       case ServiceType.GMS:
         return resolveServiceSpecificImplementation<FirebaseService>()
             ?.showNotification(
-            id: id,
-            title: title,
-            body: body,
-            payload: payload,
-            icon: icon,
-            notificationColor: notificationColor,
-            onGoing: onGoing,
-          bigPicture: bigPicture,
-          largeIcon: largeIcon,
-          bigText: bigText,
-          channelId: channelId,
-          channelName: channelName,
-          channelDescription: channelDescription,
-          isHtmlFormat: isHtmlFormat,
-          timeoutAfter: timeoutAfter,
-          when: when,
-          usesChronometer: usesChronometer,
-          chronometerCountDown: chronometerCountDown,
-          androidActions: androidActions,
-        );
+              id: id,
+              title: title,
+              body: body,
+              payload: payload,
+              icon: icon,
+              notificationColor: notificationColor,
+              onGoing: onGoing,
+              bigPicture: bigPicture,
+              largeIcon: largeIcon,
+              bigText: bigText,
+              channelId: channelId,
+              channelName: channelName,
+              channelDescription: channelDescription,
+              isHtmlFormat: isHtmlFormat,
+              timeoutAfter: timeoutAfter,
+              when: when,
+              usesChronometer: usesChronometer,
+              chronometerCountDown: chronometerCountDown,
+              androidActions: androidActions,
+            );
       default:
         return;
     }
@@ -423,43 +431,44 @@ class ServiceWrapper{
     bool usesChronometer = false,
     bool chronometerCountDown = false,
     bool isExactAlarm = false,
-    AndroidScheduleMode androidScheduleMode = AndroidScheduleMode.inexactAllowWhileIdle,
+    AndroidScheduleMode androidScheduleMode =
+        AndroidScheduleMode.inexactAllowWhileIdle,
     DateTimeComponents? matchDateTimeComponents,
     List<AndroidNotificationAction>? androidActions,
   }) async {
-    if(defaultTargetPlatform == TargetPlatform.android && isExactAlarm){
+    if (defaultTargetPlatform == TargetPlatform.android && isExactAlarm) {
       final result = await Permission.scheduleExactAlarm.request();
       //print(result);
-      if(result.isDenied || result.isPermanentlyDenied) return false;
+      if (result.isDenied || result.isPermanentlyDenied) return false;
     }
 
-    switch(serviceType){
+    switch (serviceType) {
       case ServiceType.GMS:
         await resolveServiceSpecificImplementation<FirebaseService>()
             ?.showScheduledNotification(
-            id: id,
-            title: title,
-            body: body,
-          bigPicture: bigPicture,
-          largeIcon: largeIcon,
-            payload: payload,
-          icon: icon,
-            notificationColor: notificationColor,
-            onGoing: onGoing,
-          bigText: bigText,
-            scheduledDate: scheduledDate,
-          channelId: channelId,
-          channelName: channelName,
-          channelDescription: channelDescription,
-          isHtmlFormat: isHtmlFormat,
-          timeoutAfter: timeoutAfter,
-          when: when,
-          usesChronometer: usesChronometer,
-          chronometerCountDown: chronometerCountDown,
-          androidScheduleMode: androidScheduleMode,
-          matchDateTimeComponents: matchDateTimeComponents,
-          androidActions: androidActions,
-        );
+              id: id,
+              title: title,
+              body: body,
+              bigPicture: bigPicture,
+              largeIcon: largeIcon,
+              payload: payload,
+              icon: icon,
+              notificationColor: notificationColor,
+              onGoing: onGoing,
+              bigText: bigText,
+              scheduledDate: scheduledDate,
+              channelId: channelId,
+              channelName: channelName,
+              channelDescription: channelDescription,
+              isHtmlFormat: isHtmlFormat,
+              timeoutAfter: timeoutAfter,
+              when: when,
+              usesChronometer: usesChronometer,
+              chronometerCountDown: chronometerCountDown,
+              androidScheduleMode: androidScheduleMode,
+              matchDateTimeComponents: matchDateTimeComponents,
+              androidActions: androidActions,
+            );
         break;
       default:
     }
@@ -468,7 +477,7 @@ class ServiceWrapper{
   }
 
   Future<void> cancelNotification(int id) async {
-    switch(serviceType){
+    switch (serviceType) {
       case ServiceType.GMS:
         return resolveServiceSpecificImplementation<FirebaseService>()
             ?.cancelNotification(id);
@@ -481,7 +490,7 @@ class ServiceWrapper{
   }
 
   Future<void> cancelAll() async {
-    switch(serviceType){
+    switch (serviceType) {
       case ServiceType.GMS:
         return resolveServiceSpecificImplementation<FirebaseService>()
             ?.cancelAll();
@@ -493,20 +502,25 @@ class ServiceWrapper{
     }
   }
 
-  Future<LocationWrapper?> getCurrentLocation({bool checkPermission = true, Duration? timeLimit}) async {
-    if(checkPermission){
-      if(defaultTargetPlatform == TargetPlatform.iOS){
-        final serviceStatus = await Permission.location.serviceStatus.isDisabled;
-        if(serviceStatus) return LocationWrapper.locationServiceDisabled();
+  Future<LocationWrapper?> getCurrentLocation({
+    bool checkPermission = true,
+    Duration? timeLimit,
+  }) async {
+    if (checkPermission) {
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
+        final serviceStatus =
+            await Permission.location.serviceStatus.isDisabled;
+        if (serviceStatus) return LocationWrapper.locationServiceDisabled();
       }
       final result = await Permission.location.request();
-      if(result.isDenied || result.isPermanentlyDenied){
-        if(result.isPermanentlyDenied) return LocationWrapper.permissionPermanentlyDenied();
+      if (result.isDenied || result.isPermanentlyDenied) {
+        if (result.isPermanentlyDenied)
+          return LocationWrapper.permissionPermanentlyDenied();
         return null;
       }
     }
 
-    switch(serviceType){
+    switch (serviceType) {
       case ServiceType.GMS:
         return resolveServiceSpecificImplementation<FirebaseService>()
             ?.getCurrentLocation(timeLimit: timeLimit);
@@ -522,7 +536,7 @@ class ServiceWrapper{
   }
 
   void onFlutterError(FlutterErrorDetails errorDetails) {
-    switch(serviceType){
+    switch (serviceType) {
       case ServiceType.GMS:
         return resolveServiceSpecificImplementation<FirebaseService>()
             ?.onFlutterError(errorDetails);
@@ -532,8 +546,9 @@ class ServiceWrapper{
       default:
     }
   }
+
   void recordError(Object exception, StackTrace stackTrace) {
-    switch(serviceType){
+    switch (serviceType) {
       case ServiceType.GMS:
         return resolveServiceSpecificImplementation<FirebaseService>()
             ?.recordError(exception, stackTrace);
@@ -545,10 +560,11 @@ class ServiceWrapper{
   }
 }
 
-typedef OnBackgroundNotification = Future<void> Function(RemoteMessageWrapper remoteMessage);
+typedef OnBackgroundNotification =
+    Future<void> Function(RemoteMessageWrapper remoteMessage);
 typedef OnMessageReceived = void Function(RemoteMessageWrapper remoteMessage);
 
-abstract class Service{
+abstract class Service {
   Service();
   static late Service _instance;
   static Service get instance => _instance;
@@ -560,26 +576,34 @@ abstract class Service{
   String get CHANNEL_DESCRIPTION => "Use to post notification";
   Color get notificationColor => const Color(0xffFC9220);
 
-  FirebaseApp? get firebaseApp => throw UnimplementedError('get firebaseApp has not been implemented');
+  FirebaseApp? get firebaseApp =>
+      throw UnimplementedError('get firebaseApp has not been implemented');
 
   Future<Map<String, String>> getNotificationChannel() async {
     final packageInfo = await PackageInfo.fromPlatform();
 
     return {
-      'CHANNEL_ID': '${packageInfo.appName.toLowerCase().replaceAll(' ', '_')}_channel',
+      'CHANNEL_ID':
+          '${packageInfo.appName.toLowerCase().replaceAll(' ', '_')}_channel',
       'CHANNEL_NAME': packageInfo.appName,
-      'CHANNEL_DESCRIPTION': 'Use to post notification for ${packageInfo.appName}',
+      'CHANNEL_DESCRIPTION':
+          'Use to post notification for ${packageInfo.appName}',
     };
   }
 
-  final StreamControllerReEmitOnce<RemoteMessageWrapper> onReceivedStream = StreamControllerReEmitOnce<RemoteMessageWrapper>();
-  final StreamControllerReEmitOnce<RemoteMessageWrapper> onOpenedStream = StreamControllerReEmitOnce<RemoteMessageWrapper>();
-  final StreamControllerReEmitOnce<String> tokenRefreshStreamController = StreamControllerReEmitOnce<String>();
+  final StreamControllerReEmitOnce<RemoteMessageWrapper> onReceivedStream =
+      StreamControllerReEmitOnce<RemoteMessageWrapper>();
+  final StreamControllerReEmitOnce<RemoteMessageWrapper> onOpenedStream =
+      StreamControllerReEmitOnce<RemoteMessageWrapper>();
+  final StreamControllerReEmitOnce<String> tokenRefreshStreamController =
+      StreamControllerReEmitOnce<String>();
 
   Future<void> initialize(OnBackgroundNotification handler);
   Future<void> initLocalNotification() async {}
   Future<void> deleteAllNotificationChannel() async {}
-  Future<bool> requestNotificationPermission() => throw UnimplementedError('requestNotificationPermission() has not been implemented');
+  Future<bool> requestNotificationPermission() => throw UnimplementedError(
+    'requestNotificationPermission() has not been implemented',
+  );
 
   //notification
   Future<void> showNotification({
@@ -610,46 +634,68 @@ abstract class Service{
     String? channelName,
     required DateTime scheduledDate,
   }) async {
-    throw UnimplementedError('showScheduledNotification() has not been implemented');
+    throw UnimplementedError(
+      'showScheduledNotification() has not been implemented',
+    );
   }
-  Future<void> cancelNotification(int id){
+
+  Future<void> cancelNotification(int id) {
     throw UnimplementedError('cancelNotification() has not been implemented');
   }
-  Future<void> cancelAll(){
+
+  Future<void> cancelAll() {
     throw UnimplementedError('cancelAll() has not been implemented');
   }
 
   //crashlytic
-  void onFlutterError(FlutterErrorDetails errorDetails) => throw UnimplementedError('onFlutterError() has not been implemented');
-  void recordError(Object exception, StackTrace stackTrace) => throw UnimplementedError('recordError() has not been implemented');
+  void onFlutterError(FlutterErrorDetails errorDetails) =>
+      throw UnimplementedError('onFlutterError() has not been implemented');
+  void recordError(Object exception, StackTrace stackTrace) =>
+      throw UnimplementedError('recordError() has not been implemented');
 
   //remote message
-  Stream<RemoteMessageWrapper> get onMessageReceivedStream => onReceivedStream.stream;
-  Stream<RemoteMessageWrapper> get onMessageOpenedStream => onOpenedStream.stream;
-  Stream<String> get onTokenRefreshStream => tokenRefreshStreamController.stream;
-  Future<RemoteMessageWrapper?> getInitialMessage() => throw UnimplementedError('getInitialMessage() has not been implemented');
-  StreamSubscription<RemoteMessageWrapper> onMessage(OnMessageReceived onMessageReceived) => onMessageReceivedStream.listen(onMessageReceived);
-  StreamSubscription<RemoteMessageWrapper> onMessageOpened(OnMessageReceived onMessageReceived) => onMessageOpenedStream.listen(onMessageReceived);
-  StreamSubscription<String> onTokenRefresh(Function(String token) onTokenRefreshed) => onTokenRefreshStream.listen(onTokenRefreshed);
-  Future<String?> getToken() => throw UnimplementedError('getToken() has not been implemented');
-  Future<void> deleteToken() => throw UnimplementedError('deleteToken() has not been implemented');
-  Future<void> subscribeToTopic(String topic) => throw UnimplementedError('subscribeToTopic() has not been implemented');
-  Future<void> unsubscribeFromTopic(String topic) => throw UnimplementedError('unsubscribeFromTopic() has not been implemented');
+  Stream<RemoteMessageWrapper> get onMessageReceivedStream =>
+      onReceivedStream.stream;
+  Stream<RemoteMessageWrapper> get onMessageOpenedStream =>
+      onOpenedStream.stream;
+  Stream<String> get onTokenRefreshStream =>
+      tokenRefreshStreamController.stream;
+  Future<RemoteMessageWrapper?> getInitialMessage() =>
+      throw UnimplementedError('getInitialMessage() has not been implemented');
+  StreamSubscription<RemoteMessageWrapper> onMessage(
+    OnMessageReceived onMessageReceived,
+  ) => onMessageReceivedStream.listen(onMessageReceived);
+  StreamSubscription<RemoteMessageWrapper> onMessageOpened(
+    OnMessageReceived onMessageReceived,
+  ) => onMessageOpenedStream.listen(onMessageReceived);
+  StreamSubscription<String> onTokenRefresh(
+    Function(String token) onTokenRefreshed,
+  ) => onTokenRefreshStream.listen(onTokenRefreshed);
+  Future<String?> getToken() =>
+      throw UnimplementedError('getToken() has not been implemented');
+  Future<void> deleteToken() =>
+      throw UnimplementedError('deleteToken() has not been implemented');
+  Future<void> subscribeToTopic(String topic) =>
+      throw UnimplementedError('subscribeToTopic() has not been implemented');
+  Future<void> unsubscribeFromTopic(String topic) => throw UnimplementedError(
+    'unsubscribeFromTopic() has not been implemented',
+  );
 
   //location
-  Future<LocationWrapper?> getCurrentLocation() async => throw UnimplementedError('getCurrentLocation() has not been implemented');
+  Future<LocationWrapper?> getCurrentLocation() async =>
+      throw UnimplementedError('getCurrentLocation() has not been implemented');
 }
 
-enum ServiceType{
+enum ServiceType {
   NONE,
   GMS,
   HMS,
   WEB;
 
-  static ServiceType fromName(String? type){
-    if(type != null){
-      for(final t in ServiceType.values){
-        if(t.name.toLowerCase() == type.toLowerCase()) return t;
+  static ServiceType fromName(String? type) {
+    if (type != null) {
+      for (final t in ServiceType.values) {
+        if (t.name.toLowerCase() == type.toLowerCase()) return t;
       }
     }
 
