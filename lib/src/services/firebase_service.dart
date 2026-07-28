@@ -124,6 +124,11 @@ class FirebaseService extends Service {
       debugPrint('Firebase FCM Token: ${await getToken()}');
 
       //FirebaseMessaging.onBackgroundMessage(firebaseBackgroundMessageHandler);
+    } catch (e) {
+      debugPrint('FirebaseInitializeException: $e');
+    }
+
+    try{
       _registerBackgroundMessageHandler(handler);
       FirebaseMessaging.onMessage.listen((event) {
         try {
@@ -149,19 +154,22 @@ class FirebaseService extends Service {
 
       FirebaseMessaging.instance.onTokenRefresh.listen((event) {
         try {
+          debugPrint('FirebaseOnTokenRefresh: $event');
           tokenRefreshStreamController.add(event);
         } catch (e) {
           debugPrint('FirebaseOnTokenRefreshException: $e');
         }
       });
-    } catch (e) {
-      debugPrint('FirebaseInitializeException: $e');
+    }
+    catch(e){
+      debugPrint('FirebaseRegisterStreamException: $e');
     }
 
     try {
       final remoteMessage = await FirebaseMessaging.instance
           .getInitialMessage();
       if (remoteMessage != null) {
+        debugPrint('FirebaseGetInitialMsg: ${remoteMessage.toMap()}');
         onOpenedStream.add(
           RemoteMessageWrapper.fromFirebaseMessage(remoteMessage.toMap()),
         );
