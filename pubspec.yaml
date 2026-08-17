@@ -1,19 +1,19 @@
 name: jc_service_wrapper
 description: "A service wrapper for firebase and huawei for my project"
-version: 0.0.4
+version: 0.0.5
 homepage: https://github.com/chzhhong97/flutter_packages
 
 environment:
   sdk: '>=3.8.0 <4.0.0'
-  flutter: ">=3.32.5"
+  flutter: ">=3.44.3"
 
 dependencies:
   flutter_timezone: ^5.0.2
-  flutter_local_notifications: ^20.1.0
-  permission_handler: ^12.0.0+1
-  package_info_plus: ^8.1.2
+  flutter_local_notifications: ^22.3.0
+  permission_handler: ^13.0.1
+  package_info_plus: ^10.2.1
   path_provider: ^2.1.5
-  timezone: ^0.10.1
+  timezone: ^0.11.1
   intl: ^0.20.2
   jc_utils:
     git:

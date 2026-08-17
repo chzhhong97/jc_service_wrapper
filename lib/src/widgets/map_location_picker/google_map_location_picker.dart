@@ -3,13 +3,11 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:jc_service_wrapper/jc_service_wrapper.dart';
 import 'package:jc_service_wrapper/src/widgets/map_location_picker/animated_pin.dart';
 import 'package:jc_service_wrapper/src/widgets/map_location_picker/custom_info_window.dart';
 import 'package:jc_service_wrapper/src/widgets/map_location_picker/models/map_controller.dart';
-import 'dart:ui' as ui;
 import 'models/lat_lng.dart' as l;
 
 class GoogleMapLocationPicker extends StatefulWidget {
@@ -139,7 +137,7 @@ class _GoogleMapLocationPickerState extends State<GoogleMapLocationPicker> {
               markerId: MarkerId("${key.latitude}, ${key.longitude}"),
               draggable: false,
               position: key,
-              zIndex: _markersSelectedMap[key]! ? 1 : 0,
+              zIndexInt: _markersSelectedMap[key]! ? 1 : 0,
               icon: _markersSelectedMap[key]! ? mSelected! : mUnselected!,
               onTap: () {
                 if (widget.clickedMarkerMoveCamera) {
@@ -242,7 +240,7 @@ class _GoogleMapLocationPickerState extends State<GoogleMapLocationPicker> {
           myLocationEnabled: widget.disableCenterPin ? true : false,
           mapToolbarEnabled: false,
           markers: markers,
-          cloudMapId: widget.cloudMapId,
+          mapId: widget.cloudMapId,
           onMapCreated: (controller) {
             completer.complete(controller);
             _infoWindowController.mapController = MapController(ServiceType.GMS)
