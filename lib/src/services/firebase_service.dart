@@ -164,7 +164,7 @@ class FirebaseService extends Service{
     var settings = InitializationSettings(android: android, iOS: ios);
 
     await _notificationsPlugin.initialize(
-      settings,
+      settings: settings,
       onDidReceiveNotificationResponse: (response){
         debugPrint('On Local Notification Tap');
         if(response.payload != null){
@@ -182,7 +182,7 @@ class FirebaseService extends Service{
 
     tz.initializeTimeZones();
     final locationName = await FlutterTimezone.getLocalTimezone();
-    tz.setLocalLocation(tz.getLocation(locationName));
+    tz.setLocalLocation(tz.getLocation(locationName.identifier));
 
     if(Platform.isAndroid){
       final channelInfo = await getNotificationChannel();
@@ -226,7 +226,7 @@ class FirebaseService extends Service{
       for(final channel in channelList){
         await _notificationsPlugin
             .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-            ?.deleteNotificationChannel(channel.id);
+            ?.deleteNotificationChannel(channelId: channel.id);
       }
     }
   }
@@ -362,10 +362,10 @@ class FirebaseService extends Service{
   }) async {
     await initLocalNotification();
     return _notificationsPlugin.show(
-        id ?? 0,
-        title,
-        body,
-        await _notificationDetails(
+        id: id ?? 0,
+        title: title,
+        body: body,
+        notificationDetails: await _notificationDetails(
             title: title,
             body: body,
             bigText: bigText,
@@ -407,11 +407,11 @@ class FirebaseService extends Service{
   }) async {
     await initLocalNotification();
     return _notificationsPlugin.zonedSchedule(
-      id ?? 0,
-      title,
-      body,
-      tz.TZDateTime.from(scheduledDate, tz.local),
-      await _notificationDetails(
+      id: id ?? 0,
+      title: title,
+      body: body,
+      scheduledDate: tz.TZDateTime.from(scheduledDate, tz.local),
+      notificationDetails: await _notificationDetails(
         title: title,
           body: body,
           bigText: bigText,
@@ -429,7 +429,6 @@ class FirebaseService extends Service{
       ),
       payload: payload,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 
@@ -530,7 +529,7 @@ class FirebaseService extends Service{
   @override
   Future<void> cancelNotification(int id) async {
     await initLocalNotification();
-    return _notificationsPlugin.cancel(id);
+    return _notificationsPlugin.cancel(id: id);
   }
 
   @override
