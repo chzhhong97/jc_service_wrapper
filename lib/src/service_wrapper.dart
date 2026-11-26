@@ -25,6 +25,7 @@ class ServiceWrapper{
   ServiceType _serviceType = ServiceType.NONE;
 
   bool isInit = false;
+  Future<void>? _initialization;
 
   Future<void> initServiceType() async {
     _serviceType = await getServiceType();
@@ -69,39 +70,70 @@ class ServiceWrapper{
   ///   })
   /// ```
   Future<void> initialize(
-      OnBackgroundNotification onBackgroundNotification,
-      {
+      OnBackgroundNotification onBackgroundNotification, {
         FirebaseOptions? options,
         WebTokenOptions? webTokenOptions,
         String? vapidKey,
-        List<AndroidNotificationChannel> androidLocalNotificationChannelList = const [],
+        List<AndroidNotificationChannel> androidLocalNotificationChannelList =
+        const [],
+        bool requestPermission = true,
       }) async {
-    if(isInit) return;
-    isInit = true;
+    if (isInit) return;
+    final pending = _initialization;
+    if (pending != null) return pending;
 
+    final initialization = _initialize(
+      onBackgroundNotification,
+      options: options,
+      webTokenOptions: webTokenOptions,
+      vapidKey: vapidKey,
+      androidLocalNotificationChannelList: androidLocalNotificationChannelList,
+      requestPermission: requestPermission,
+    );
+    _initialization = initialization;
+    try {
+      await initialization;
+      isInit = true;
+    } finally {
+      // Failed setup remains retryable; concurrent callers await the same work.
+      _initialization = null;
+    }
+  }
+
+  Future<void> _initialize(
+      OnBackgroundNotification onBackgroundNotification, {
+        FirebaseOptions? options,
+        WebTokenOptions? webTokenOptions,
+        String? vapidKey,
+        required List<AndroidNotificationChannel>
+        androidLocalNotificationChannelList,
+        required bool requestPermission,
+      }) async {
     _serviceType = await getServiceType();
 
-    switch(_serviceType){
+    switch (_serviceType) {
       case ServiceType.GMS:
         Service.instance = FirebaseService();
         await resolveServiceSpecificImplementation<FirebaseService>()
             ?.initialize(
-            onBackgroundNotification,
-            options: options,
-            androidLocalNotificationChannelList: androidLocalNotificationChannelList
+          onBackgroundNotification,
+          options: options,
+          androidLocalNotificationChannelList:
+          androidLocalNotificationChannelList,
+          requestPermission: requestPermission,
         );
         break;
       case ServiceType.HMS:
         Service.instance = HuaweiService();
-        await resolveServiceSpecificImplementation<HuaweiService>()
-            ?.initialize(onBackgroundNotification);
+        await resolveServiceSpecificImplementation<HuaweiService>()?.initialize(
+          onBackgroundNotification,
+        );
         break;
       case ServiceType.WEB:
         Service.instance = WebService();
-        await resolveServiceSpecificImplementation<WebService>()
-            ?.initialize(
-            onBackgroundNotification,
-            options: options,
+        await resolveServiceSpecificImplementation<WebService>()?.initialize(
+          onBackgroundNotification,
+          options: options,
           vapidKey: vapidKey,
           webTokenOptions: webTokenOptions,
         );
@@ -110,7 +142,7 @@ class ServiceWrapper{
     }
 
     //crashlytics
-    FlutterError.onError = (error){
+    FlutterError.onError = (error) {
       onFlutterError(error);
     };
 
@@ -522,6 +554,9 @@ abstract class Service{
   String get CHANNEL_DESCRIPTION => "Use to post notification";
   Color get notificationColor => const Color(0xffFC9220);
 
+  FirebaseApp? get firebaseApp =>
+      throw UnimplementedError('get firebaseApp has not been implemented');
+
   Future<Map<String, String>> getNotificationChannel() async {
     final packageInfo = await PackageInfo.fromPlatform();
 
@@ -534,6 +569,8 @@ abstract class Service{
 
   final StreamControllerReEmitOnce<RemoteMessageWrapper> onReceivedStream = StreamControllerReEmitOnce<RemoteMessageWrapper>();
   final StreamControllerReEmitOnce<RemoteMessageWrapper> onOpenedStream = StreamControllerReEmitOnce<RemoteMessageWrapper>();
+  final StreamControllerReEmitOnce<String> tokenRefreshStreamController =
+  StreamControllerReEmitOnce<String>();
 
   Future<void> initialize(OnBackgroundNotification handler);
   Future<void> initLocalNotification() async {}
@@ -585,6 +622,8 @@ abstract class Service{
   //remote message
   Stream<RemoteMessageWrapper> get onMessageReceivedStream => onReceivedStream.stream;
   Stream<RemoteMessageWrapper> get onMessageOpenedStream => onOpenedStream.stream;
+  Stream<String> get onTokenRefreshStream =>
+      tokenRefreshStreamController.stream;
   Future<RemoteMessageWrapper?> getInitialMessage() => throw UnimplementedError('getInitialMessage() has not been implemented');
   StreamSubscription<RemoteMessageWrapper> onMessage(OnMessageReceived onMessageReceived) => onMessageReceivedStream.listen(onMessageReceived);
   StreamSubscription<RemoteMessageWrapper> onMessageOpened(OnMessageReceived onMessageReceived) => onMessageOpenedStream.listen(onMessageReceived);
