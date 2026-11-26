@@ -24,6 +24,7 @@ class ServiceWrapper {
   ServiceType _serviceType = ServiceType.NONE;
 
   bool isInit = false;
+  Future<void>? _initialization;
 
   Future<void> initServiceType() async {
     _serviceType = await getServiceType();
@@ -77,8 +78,36 @@ class ServiceWrapper {
     bool requestPermission = true,
   }) async {
     if (isInit) return;
-    isInit = true;
+    final pending = _initialization;
+    if (pending != null) return pending;
 
+    final initialization = _initialize(
+      onBackgroundNotification,
+      options: options,
+      webTokenOptions: webTokenOptions,
+      vapidKey: vapidKey,
+      androidLocalNotificationChannelList: androidLocalNotificationChannelList,
+      requestPermission: requestPermission,
+    );
+    _initialization = initialization;
+    try {
+      await initialization;
+      isInit = true;
+    } finally {
+      // Failed setup remains retryable; concurrent callers await the same work.
+      _initialization = null;
+    }
+  }
+
+  Future<void> _initialize(
+      OnBackgroundNotification onBackgroundNotification, {
+        FirebaseOptions? options,
+        WebTokenOptions? webTokenOptions,
+        String? vapidKey,
+        required List<AndroidNotificationChannel>
+        androidLocalNotificationChannelList,
+        required bool requestPermission,
+      }) async {
     _serviceType = await getServiceType();
 
     switch (_serviceType) {
@@ -86,12 +115,12 @@ class ServiceWrapper {
         Service.instance = FirebaseService();
         await resolveServiceSpecificImplementation<FirebaseService>()
             ?.initialize(
-              onBackgroundNotification,
-              options: options,
-              androidLocalNotificationChannelList:
-                  androidLocalNotificationChannelList,
-              requestPermission: requestPermission,
-            );
+          onBackgroundNotification,
+          options: options,
+          androidLocalNotificationChannelList:
+          androidLocalNotificationChannelList,
+          requestPermission: requestPermission,
+        );
         break;
       case ServiceType.HMS:
         Service.instance = HuaweiService();

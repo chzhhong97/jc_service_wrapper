@@ -105,11 +105,19 @@ class FirebaseService extends Service {
   }) async {
     try {
       _firebaseApp = await Firebase.initializeApp(options: options);
+    } catch (e, stackTrace) {
+      debugPrint('FirebaseInitializeException: $e');
+      debugPrintStack(stackTrace: stackTrace);
+      rethrow;
+    }
 
+    // Permission and token errors must not be confused with core initialization.
+    // Firebase is available before any messaging API is used below.
+    try {
       await FirebaseMessaging.instance
           .setForegroundNotificationPresentationOptions();
 
-      if(requestPermission){
+      if (requestPermission) {
         await FirebaseMessaging.instance.requestPermission(
           alert: true,
           announcement: false,
@@ -125,7 +133,7 @@ class FirebaseService extends Service {
 
       //FirebaseMessaging.onBackgroundMessage(firebaseBackgroundMessageHandler);
     } catch (e) {
-      debugPrint('FirebaseInitializeException: $e');
+      debugPrint('FirebaseMessagingSetupException: $e');
     }
 
     try{
