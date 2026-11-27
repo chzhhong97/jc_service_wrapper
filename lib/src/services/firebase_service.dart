@@ -643,15 +643,30 @@ class FirebaseService extends Service {
   }
 
   @override
-  Future<LocationWrapper?> getCurrentLocation({Duration? timeLimit}) async {
+  Future<LocationWrapper?> getCurrentLocation({Duration? timeLimit, LocationSettings? settings}) async {
     try {
       final position = await Geolocator.getCurrentPosition(
-        locationSettings: LocationSettings(timeLimit: timeLimit),
+        locationSettings: settings ?? LocationSettings(timeLimit: timeLimit),
       );
       //print(position.toJson());
       return LocationWrapper.fromPosition(position.toJson());
     } on TimeoutException catch (e) {
       return LocationWrapper.timeoutException(e.message);
+    } on LocationServiceDisabledException catch (e) {
+      return LocationWrapper.locationServiceDisabled(e.toString());
+    } catch (e) {
+      return LocationWrapper.unknownException(e.toString());
+    }
+  }
+
+  @override
+  Future<LocationWrapper?> getLastKnownLocation() async {
+    try {
+      final position = await Geolocator.getLastKnownPosition();
+      if(position != null){
+        return LocationWrapper.fromPosition(position.toJson());
+      }
+      return null;
     } on LocationServiceDisabledException catch (e) {
       return LocationWrapper.locationServiceDisabled(e.toString());
     } catch (e) {

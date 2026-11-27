@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_hms_gms_availability/flutter_hms_gms_availability.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:jc_service_wrapper/src/models/location_wrapper.dart';
 import 'package:jc_service_wrapper/src/models/remote_message_wrapper.dart';
 import 'package:jc_service_wrapper/src/services/empty_web_service.dart'
@@ -487,7 +488,12 @@ class ServiceWrapper{
     }
   }
 
-  Future<LocationWrapper?> getCurrentLocation({bool checkPermission = true, Duration? timeLimit}) async {
+  Future<LocationWrapper?> getCurrentLocation({bool checkPermission = true,
+    @Deprecated(
+        "use settings parameter with AndroidSettings, AppleSettings, WebSettings, or LocationSettings")
+    Duration? timeLimit,
+    LocationSettings? settings,
+  }) async {
     if(checkPermission){
       if(defaultTargetPlatform == TargetPlatform.iOS){
         final serviceStatus = await Permission.location.serviceStatus.isDisabled;
@@ -503,13 +509,29 @@ class ServiceWrapper{
     switch(serviceType){
       case ServiceType.GMS:
         return resolveServiceSpecificImplementation<FirebaseService>()
-            ?.getCurrentLocation(timeLimit: timeLimit);
+            ?.getCurrentLocation(timeLimit: timeLimit, settings: settings);
       case ServiceType.HMS:
         return resolveServiceSpecificImplementation<HuaweiService>()
             ?.getCurrentLocation();
       case ServiceType.WEB:
         return resolveServiceSpecificImplementation<WebService>()
             ?.getCurrentLocation();
+      default:
+        return null;
+    }
+  }
+
+  Future<LocationWrapper?> getLastKnownLocation() async {
+    switch(serviceType){
+      case ServiceType.GMS:
+        return resolveServiceSpecificImplementation<FirebaseService>()
+            ?.getLastKnownLocation();
+      case ServiceType.HMS:
+        return resolveServiceSpecificImplementation<HuaweiService>()
+            ?.getLastKnownLocation();
+      case ServiceType.WEB:
+        return resolveServiceSpecificImplementation<WebService>()
+            ?.getLastKnownLocation();
       default:
         return null;
     }
@@ -633,6 +655,7 @@ abstract class Service{
 
   //location
   Future<LocationWrapper?> getCurrentLocation() async => throw UnimplementedError('getCurrentLocation() has not been implemented');
+  Future<LocationWrapper?> getLastKnownLocation() async => throw UnimplementedError('getLastKnownLocation() has not been implemented');
 }
 
 enum ServiceType{

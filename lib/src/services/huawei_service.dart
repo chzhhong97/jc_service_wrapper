@@ -405,4 +405,15 @@ class HuaweiService extends Service{
 
     return LocationWrapper.fromLocation(currentLocation.toMap());
   }
+
+  @override
+  Future<LocationWrapper?> getLastKnownLocation() async {
+    try{
+      final currentLocation = await _fusedLocation.getLastLocation();
+      return LocationWrapper.fromLocation(currentLocation.toMap());
+    }
+    catch(e){
+      return null;
+    }
+  }
 }
