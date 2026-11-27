@@ -206,6 +206,23 @@ class WebService extends Service {
       return LocationWrapper.timeoutException(e.toString());
     } on LocationServiceDisabledException catch (e) {
       return LocationWrapper.locationServiceDisabled(e.toString());
+    } catch (e) {
+      return LocationWrapper.unknownException(e.toString());
+    }
+  }
+
+  @override
+  Future<LocationWrapper?> getLastKnownLocation() async {
+    try {
+      final position = await Geolocator.getLastKnownPosition();
+      if(position != null){
+        return LocationWrapper.fromPosition(position.toJson());
+      }
+      return null;
+    } on LocationServiceDisabledException catch (e) {
+      return LocationWrapper.locationServiceDisabled(e.toString());
+    } catch (e) {
+      return LocationWrapper.unknownException(e.toString());
     }
   }
 }
