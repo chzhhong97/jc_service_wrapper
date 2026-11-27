@@ -552,6 +552,23 @@ class ServiceWrapper{
     }
   }
 
+  Future<LocationWrapper?> getLastKnownLocation() async {
+
+    switch(serviceType){
+      case ServiceType.GMS:
+        return resolveServiceSpecificImplementation<FirebaseService>()
+            ?.getLastKnownLocation();
+      case ServiceType.HMS:
+        return resolveServiceSpecificImplementation<HuaweiService>()
+            ?.getLastKnownLocation();
+      case ServiceType.WEB:
+        return resolveServiceSpecificImplementation<WebService>()
+            ?.getLastKnownLocation();
+      default:
+        return null;
+    }
+  }
+
   void onFlutterError(FlutterErrorDetails errorDetails) {
     switch(serviceType){
       case ServiceType.GMS:
@@ -668,6 +685,7 @@ abstract class Service{
 
   //location
   Future<LocationWrapper?> getCurrentLocation() async => throw UnimplementedError('getCurrentLocation() has not been implemented');
+  Future<LocationWrapper?> getLastKnownLocation() async => throw UnimplementedError('getLastKnownLocation() has not been implemented');
 }
 
 enum ServiceType{
